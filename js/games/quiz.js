@@ -389,7 +389,7 @@ class TickleboxQuiz {
         if (shareBtn) {
             shareBtn.addEventListener('click', () => {
                 const share = new TickleboxShare({
-                    title: 'Interactive Quiz - TickleBox',
+                    title: 'TickleBox - Interactive Quiz ',
                     text: `I just scored ${this.score}/${this.quizData.length} on TickleBox Quiz! Can you beat my score?`,
                     url: window.location.href
                 });
