@@ -1,0 +1,1004 @@
+<!-- games/memory-game.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory Game - TickleBox</title>
+    <link rel="stylesheet" href="../css/ticklebox-styles.css">
+    <link rel="stylesheet" href="../css/ticklebox-animations.css">
+    <style>
+        .ticklebox-memory-container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        .ticklebox-memory-difficulty {
+            background: var(--ticklebox-bg-card);
+            border-radius: var(--ticklebox-radius-lg);
+            padding: var(--ticklebox-space-xl);
+            margin: var(--ticklebox-space-lg) 0;
+            text-align: center;
+        }
+        
+        .ticklebox-memory-difficulty-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: var(--ticklebox-space);
+            margin: var(--ticklebox-space) 0;
+        }
+        
+        .ticklebox-memory-difficulty-option {
+            padding: var(--ticklebox-space);
+            background: var(--ticklebox-bg-secondary);
+            border: 2px solid var(--ticklebox-border);
+            border-radius: var(--ticklebox-radius);
+            cursor: pointer;
+            transition: all var(--ticklebox-transition-fast);
+        }
+        
+        .ticklebox-memory-difficulty-option:hover {
+            border-color: var(--ticklebox-primary);
+            transform: translateY(-2px);
+        }
+        
+        .ticklebox-memory-difficulty-option.active {
+            border-color: var(--ticklebox-primary);
+            background: var(--ticklebox-primary);
+            color: white;
+        }
+        
+        .ticklebox-memory-difficulty-icon {
+            font-size: 2rem;
+            margin-bottom: var(--ticklebox-space-sm);
+        }
+        
+        .ticklebox-memory-difficulty-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: var(--ticklebox-space-xs);
+        }
+        
+        .ticklebox-memory-difficulty-desc {
+            font-size: 0.875rem;
+            opacity: 0.8;
+        }
+        
+        .ticklebox-memory-game {
+            background: var(--ticklebox-bg-card);
+            border-radius: var(--ticklebox-radius-lg);
+            padding: var(--ticklebox-space);
+            margin: var(--ticklebox-space-lg) 0;
+            display: none;
+        }
+        
+        .ticklebox-memory-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: var(--ticklebox-space);
+            margin-bottom: var(--ticklebox-space);
+        }
+        
+        @media (max-width: 640px) {
+            .ticklebox-memory-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        .ticklebox-memory-stat {
+            background: var(--ticklebox-bg-secondary);
+            border-radius: var(--ticklebox-radius);
+            padding: var(--ticklebox-space);
+            text-align: center;
+        }
+        
+        .ticklebox-memory-stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--ticklebox-primary);
+        }
+        
+        .ticklebox-memory-stat-label {
+            font-size: 0.875rem;
+            color: var(--ticklebox-text-secondary);
+        }
+        
+        .ticklebox-memory-grid {
+            display: grid;
+            gap: var(--ticklebox-space-sm);
+            margin: var(--ticklebox-space) 0;
+            justify-content: center;
+        }
+        
+        .ticklebox-memory-card {
+            aspect-ratio: 1;
+            background: var(--ticklebox-primary);
+            border-radius: var(--ticklebox-radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            transform-style: preserve-3d;
+            position: relative;
+        }
+        
+        .ticklebox-memory-card.flipped {
+            transform: rotateY(180deg);
+        }
+        
+        .ticklebox-memory-card.matched {
+            background: var(--ticklebox-secondary);
+            cursor: default;
+        }
+        
+        .ticklebox-memory-card-front,
+        .ticklebox-memory-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: var(--ticklebox-radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .ticklebox-memory-card-front {
+            background: var(--ticklebox-bg-tertiary);
+            color: var(--ticklebox-text-tertiary);
+            font-size: 2rem;
+        }
+        
+        .ticklebox-memory-card-back {
+            background: white;
+            transform: rotateY(180deg);
+            font-size: 2rem;
+        }
+        
+        .ticklebox-memory-themes {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: var(--ticklebox-space-sm);
+            margin: var(--ticklebox-space) 0;
+        }
+        
+        .ticklebox-memory-theme {
+            padding: var(--ticklebox-space-sm);
+            background: var(--ticklebox-bg-secondary);
+            border: 2px solid var(--ticklebox-border);
+            border-radius: var(--ticklebox-radius);
+            text-align: center;
+            cursor: pointer;
+            transition: all var(--ticklebox-transition-fast);
+        }
+        
+        .ticklebox-memory-theme:hover {
+            border-color: var(--ticklebox-primary);
+            transform: translateY(-2px);
+        }
+        
+        .ticklebox-memory-theme.active {
+            border-color: var(--ticklebox-primary);
+            background: var(--ticklebox-primary);
+            color: white;
+        }
+        
+        .ticklebox-memory-theme-icon {
+            font-size: 1.5rem;
+            margin-bottom: var(--ticklebox-space-xs);
+        }
+        
+        .ticklebox-memory-actions {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--ticklebox-space);
+            margin-top: var(--ticklebox-space);
+        }
+        
+        @media (max-width: 640px) {
+            .ticklebox-memory-actions {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .ticklebox-memory-btn {
+            padding: var(--ticklebox-space-sm) var(--ticklebox-space);
+            border: none;
+            border-radius: var(--ticklebox-radius);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--ticklebox-transition-fast);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--ticklebox-space-xs);
+        }
+        
+        .ticklebox-memory-btn-primary {
+            background: var(--ticklebox-primary);
+            color: white;
+        }
+        
+        .ticklebox-memory-btn-primary:hover {
+            background: var(--ticklebox-primary-dark);
+            transform: translateY(-2px);
+        }
+        
+        .ticklebox-memory-btn-secondary {
+            background: var(--ticklebox-bg-secondary);
+            color: var(--ticklebox-text-primary);
+            border: 2px solid var(--ticklebox-border);
+        }
+        
+        .ticklebox-memory-btn-secondary:hover {
+            border-color: var(--ticklebox-primary);
+            transform: translateY(-2px);
+        }
+        
+        .ticklebox-memory-result {
+            background: linear-gradient(135deg, var(--ticklebox-primary-light), var(--ticklebox-secondary-light));
+            border-radius: var(--ticklebox-radius-lg);
+            padding: var(--ticklebox-space-xl);
+            margin: var(--ticklebox-space-lg) 0;
+            color: white;
+            text-align: center;
+            display: none;
+            animation: ticklebox-scale-in var(--ticklebox-transition);
+        }
+        
+        .ticklebox-memory-result-icon {
+            font-size: 4rem;
+            margin-bottom: var(--ticklebox-space);
+            animation: ticklebox-bounce 1s infinite;
+        }
+        
+        .ticklebox-memory-result-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: var(--ticklebox-space);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .ticklebox-memory-result-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--ticklebox-space);
+            margin: var(--ticklebox-space) 0;
+        }
+        
+        .ticklebox-memory-result-stat {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: var(--ticklebox-radius);
+            padding: var(--ticklebox-space);
+        }
+        
+        .ticklebox-memory-result-stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: var(--ticklebox-space-xs);
+        }
+        
+        .ticklebox-memory-result-stat-label {
+            font-size: 0.875rem;
+            opacity: 0.9;
+        }
+        
+        .ticklebox-memory-timer {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--ticklebox-accent);
+            margin: var(--ticklebox-space) 0;
+        }
+        
+        .ticklebox-memory-completion {
+            height: 8px;
+            background: var(--ticklebox-bg-tertiary);
+            border-radius: 4px;
+            margin: var(--ticklebox-space) 0;
+            overflow: hidden;
+        }
+        
+        .ticklebox-memory-completion-fill {
+            height: 100%;
+            background: var(--ticklebox-secondary);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+        
+        .ticklebox-memory-card-shake {
+            animation: ticklebox-shake 0.5s;
+        }
+        
+        .ticklebox-memory-card-pop {
+            animation: ticklebox-scale-in 0.3s;
+        }
+    </style>
+</head>
+<body>
+   <!-- components/navbar.html - FIXED VERSION -->
+
+
+    <div id="tickleboxNavbarContainer"></div>
+
+    <main class="ticklebox-container">
+        <div class="ticklebox-game-header">
+            <div class="ticklebox-game-header-icon">🧠</div>
+            <div class="ticklebox-game-header-info">
+                <h1 class="ticklebox-game-title">Memory Game</h1>
+                <p class="ticklebox-game-subtitle">Flip cards to match photos and messages</p>
+                <div class="ticklebox-game-meta">
+                    <span class="ticklebox-game-rating">⭐ 4.7 (1.2M+ plays)</span>
+                    <span class="ticklebox-game-category">🧩 Puzzle</span>
+                    <span class="ticklebox-game-time">⏱️ 3-10 min</span>
+                </div>
+            </div>
+            <button class="ticklebox-game-share" id="tickleboxMemoryShare">
+                <svg viewBox="0 0 24 24" width="20" height="20">
+                    <path fill="currentColor" d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/>
+                </svg>
+                Share
+            </button>
+        </div>
+
+        <div class="ticklebox-game-content">
+            <div class="ticklebox-memory-container">
+                <div class="ticklebox-memory-difficulty">
+                    <h2 class="ticklebox-section-title">Select Difficulty</h2>
+                    <p class="ticklebox-section-subtitle">Choose how many pairs you want to match</p>
+                    
+                    <div class="ticklebox-memory-difficulty-options" id="tickleboxDifficultyOptions">
+                        <!-- Options will be loaded by JavaScript -->
+                    </div>
+                    
+                    <div class="ticklebox-memory-themes" id="tickleboxMemoryThemes">
+                        <!-- Themes will be loaded by JavaScript -->
+                    </div>
+                </div>
+                
+                <div class="ticklebox-memory-game" id="tickleboxMemoryGame">
+                    <div class="ticklebox-memory-stats">
+                        <div class="ticklebox-memory-stat">
+                            <div class="ticklebox-memory-stat-value" id="tickleboxMovesCount">0</div>
+                            <div class="ticklebox-memory-stat-label">Moves</div>
+                        </div>
+                        <div class="ticklebox-memory-stat">
+                            <div class="ticklebox-memory-stat-value" id="tickleboxMatchesCount">0</div>
+                            <div class="ticklebox-memory-stat-label">Matches</div>
+                        </div>
+                        <div class="ticklebox-memory-stat">
+                            <div class="ticklebox-memory-stat-value" id="tickleboxTimeCount">00:00</div>
+                            <div class="ticklebox-memory-stat-label">Time</div>
+                        </div>
+                        <div class="ticklebox-memory-stat">
+                            <div class="ticklebox-memory-stat-value" id="tickleboxAccuracyCount">0%</div>
+                            <div class="ticklebox-memory-stat-label">Accuracy</div>
+                        </div>
+                    </div>
+                    
+                    <div class="ticklebox-memory-completion">
+                        <div class="ticklebox-memory-completion-fill" id="tickleboxCompletionFill" style="width: 0%"></div>
+                    </div>
+                    
+                    <div class="ticklebox-memory-timer" id="tickleboxMemoryTimer"></div>
+                    
+                    <div class="ticklebox-memory-grid" id="tickleboxMemoryGrid">
+                        <!-- Cards will be loaded here -->
+                    </div>
+                    
+                    <div class="ticklebox-memory-actions">
+                        <button class="ticklebox-memory-btn ticklebox-memory-btn-secondary" id="tickleboxMemoryRestart">
+                            🔄 Restart Game
+                        </button>
+                        <button class="ticklebox-memory-btn ticklebox-memory-btn-secondary" id="tickleboxMemoryHint">
+                            💡 Show Hint
+                        </button>
+                        <button class="ticklebox-memory-btn ticklebox-memory-btn-primary" id="tickleboxMemoryReveal">
+                            👁️ Reveal All
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="ticklebox-memory-result" id="tickleboxMemoryResult">
+                    <!-- Results will be shown here -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+   <!-- components/footer.html - FIXED VERSION -->
+
+    <div id="tickleboxFooterContainer"></div>
+
+    <script src="../js/ticklebox-main.js"></script>
+    <script>
+        // Game difficulty levels
+        const TICKLEBOX_MEMORY_DIFFICULTY = [
+            {
+                id: 'easy',
+                icon: '😊',
+                title: 'Easy',
+                pairs: 6,
+                grid: '3x4',
+                time: 120
+            },
+            {
+                id: 'medium',
+                icon: '😎',
+                title: 'Medium',
+                pairs: 8,
+                grid: '4x4',
+                time: 180
+            },
+            {
+                id: 'hard',
+                icon: '🤓',
+                title: 'Hard',
+                pairs: 12,
+                grid: '4x6',
+                time: 240
+            },
+            {
+                id: 'expert',
+                icon: '🧠',
+                title: 'Expert',
+                pairs: 18,
+                grid: '6x6',
+                time: 300
+            }
+        ];
+        
+        // Game themes
+        const TICKLEBOX_MEMORY_THEMES = [
+            {
+                id: 'emoji',
+                icon: '😀',
+                title: 'Emojis',
+                items: ['😀', '😎', '🤓', '😍', '🤩', '😜', '🤗', '😴', '🥳', '🤠', '🥰', '😇', '🤪', '😏', '🤔', '😮', '😳', '🥺']
+            },
+            {
+                id: 'animals',
+                icon: '🐶',
+                title: 'Animals',
+                items: ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯', '🦁', '🐮', '🐷', '🐸', '🐵', '🐔', '🐧', '🐦']
+            },
+            {
+                id: 'food',
+                icon: '🍎',
+                title: 'Food',
+                items: ['🍎', '🍕', '🍔', '🍟', '🌭', '🍿', '🧁', '🍰', '🍫', '🍩', '🍪', '🍦', '🍭', '🍬', '🥨', '🥞', '🧇', '🥐']
+            },
+            {
+                id: 'travel',
+                icon: '🚗',
+                title: 'Travel',
+                items: ['🚗', '✈️', '🚀', '🚁', '🚂', '🚢', '🏍️', '🚲', '🛴', '🚤', '🚡', '🚠', '🚟', '🚃', '🚄', '🚅', '🚈', '🚊']
+            },
+            {
+                id: 'sports',
+                icon: '⚽',
+                title: 'Sports',
+                items: ['⚽', '🏀', '🏈', '⚾', '🥎', '🎾', '🏐', '🏉', '🎱', '🏓', '🏸', '🏒', '🏑', '🥍', '🏏', '🥊', '🤿', '🛹']
+            },
+            {
+                id: 'hearts',
+                icon: '💖',
+                title: 'Hearts',
+                items: ['💖', '💝', '💘', '💗', '💓', '💞', '💕', '💟', '❤️', '🧡', '💛', '💚', '💙', '💜', '🤎', '🖤', '🤍', '💔']
+            }
+        ];
+        
+        class TickleboxMemoryGame {
+            constructor() {
+                this.difficulty = 'medium';
+                this.theme = 'emoji';
+                this.cards = [];
+                this.flippedCards = [];
+                this.matchedPairs = 0;
+                this.moves = 0;
+                this.gameStarted = false;
+                this.gameCompleted = false;
+                this.startTime = null;
+                this.timer = null;
+                this.elapsedTime = 0;
+                this.hintUsed = false;
+                this.init();
+            }
+            
+            init() {
+                this.loadDifficultyOptions();
+                this.loadThemeOptions();
+                this.setupEventListeners();
+            }
+            
+            loadDifficultyOptions() {
+                const optionsDiv = document.getElementById('tickleboxDifficultyOptions');
+                TICKLEBOX_MEMORY_DIFFICULTY.forEach(level => {
+                    const optionDiv = document.createElement('div');
+                    optionDiv.className = 'ticklebox-memory-difficulty-option';
+                    optionDiv.dataset.difficulty = level.id;
+                    optionDiv.innerHTML = `
+                        <div class="ticklebox-memory-difficulty-icon">${level.icon}</div>
+                        <div class="ticklebox-memory-difficulty-title">${level.title}</div>
+                        <div class="ticklebox-memory-difficulty-desc">${level.pairs} pairs • ${level.grid}</div>
+                    `;
+                    
+                    if (level.id === this.difficulty) {
+                        optionDiv.classList.add('active');
+                    }
+                    
+                    optionDiv.addEventListener('click', () => {
+                        this.selectDifficulty(level.id);
+                    });
+                    
+                    optionsDiv.appendChild(optionDiv);
+                });
+            }
+            
+            loadThemeOptions() {
+                const themesDiv = document.getElementById('tickleboxMemoryThemes');
+                TICKLEBOX_MEMORY_THEMES.forEach(theme => {
+                    const themeDiv = document.createElement('div');
+                    themeDiv.className = 'ticklebox-memory-theme';
+                    themeDiv.dataset.theme = theme.id;
+                    themeDiv.innerHTML = `
+                        <div class="ticklebox-memory-theme-icon">${theme.icon}</div>
+                        <div class="ticklebox-memory-theme-title">${theme.title}</div>
+                    `;
+                    
+                    if (theme.id === this.theme) {
+                        themeDiv.classList.add('active');
+                    }
+                    
+                    themeDiv.addEventListener('click', () => {
+                        this.selectTheme(theme.id);
+                    });
+                    
+                    themesDiv.appendChild(themeDiv);
+                });
+            }
+            
+            setupEventListeners() {
+                // Restart game
+                document.getElementById('tickleboxMemoryRestart').addEventListener('click', () => {
+                    this.startGame();
+                });
+                
+                // Hint button
+                document.getElementById('tickleboxMemoryHint').addEventListener('click', () => {
+                    this.showHint();
+                });
+                
+                // Reveal all
+                document.getElementById('tickleboxMemoryReveal').addEventListener('click', () => {
+                    this.revealAllCards();
+                });
+                
+                // Share button
+                document.getElementById('tickleboxMemoryShare').addEventListener('click', () => {
+                    this.shareResult();
+                });
+            }
+            
+            selectDifficulty(difficulty) {
+                this.difficulty = difficulty;
+                
+                // Update UI
+                document.querySelectorAll('.ticklebox-memory-difficulty-option').forEach(option => {
+                    option.classList.remove('active');
+                });
+                document.querySelector(`.ticklebox-memory-difficulty-option[data-difficulty="${difficulty}"]`).classList.add('active');
+                
+                // Start game
+                this.startGame();
+            }
+            
+            selectTheme(theme) {
+                this.theme = theme;
+                
+                // Update UI
+                document.querySelectorAll('.ticklebox-memory-theme').forEach(t => {
+                    t.classList.remove('active');
+                });
+                document.querySelector(`.ticklebox-memory-theme[data-theme="${theme}"]`).classList.add('active');
+                
+                // Restart game with new theme
+                if (this.gameStarted) {
+                    this.startGame();
+                }
+            }
+            
+            startGame() {
+                // Reset game state
+                this.cards = [];
+                this.flippedCards = [];
+                this.matchedPairs = 0;
+                this.moves = 0;
+                this.gameStarted = true;
+                this.gameCompleted = false;
+                this.elapsedTime = 0;
+                this.hintUsed = false;
+                
+                // Clear timer
+                if (this.timer) {
+                    clearInterval(this.timer);
+                    this.timer = null;
+                }
+                
+                // Get selected difficulty
+                const difficulty = TICKLEBOX_MEMORY_DIFFICULTY.find(d => d.id === this.difficulty);
+                const theme = TICKLEBOX_MEMORY_THEMES.find(t => t.id === this.theme);
+                
+                // Generate cards
+                const pairs = difficulty.pairs;
+                const themeItems = [...theme.items].slice(0, pairs);
+                
+                // Create pairs
+                let cardValues = [];
+                themeItems.forEach(item => {
+                    cardValues.push(item, item);
+                });
+                
+                // Shuffle cards
+                cardValues = this.shuffleArray(cardValues);
+                
+                // Create card objects
+                this.cards = cardValues.map((value, index) => ({
+                    id: index,
+                    value: value,
+                    flipped: false,
+                    matched: false
+                }));
+                
+                // Show game area
+                document.getElementById('tickleboxMemoryGame').style.display = 'block';
+                document.getElementById('tickleboxMemoryResult').style.display = 'none';
+                
+                // Update stats
+                this.updateStats();
+                
+                // Create grid
+                this.createGrid(difficulty.grid);
+                
+                // Start timer
+                this.startTimer();
+                
+                // Scroll to game
+                document.getElementById('tickleboxMemoryGame').scrollIntoView({ 
+                    behavior: 'smooth' 
+                });
+            }
+            
+            createGrid(gridSize) {
+                const gridDiv = document.getElementById('tickleboxMemoryGrid');
+                gridDiv.innerHTML = '';
+                
+                // Parse grid size (e.g., "4x4")
+                const [rows, cols] = gridSize.split('x').map(Number);
+                
+                // Set grid template
+                gridDiv.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+                
+                // Create cards
+                this.cards.forEach(card => {
+                    const cardDiv = document.createElement('div');
+                    cardDiv.className = 'ticklebox-memory-card';
+                    cardDiv.dataset.cardId = card.id;
+                    
+                    cardDiv.innerHTML = `
+                        <div class="ticklebox-memory-card-front">?</div>
+                        <div class="ticklebox-memory-card-back">${card.value}</div>
+                    `;
+                    
+                    cardDiv.addEventListener('click', () => {
+                        this.flipCard(card.id);
+                    });
+                    
+                    gridDiv.appendChild(cardDiv);
+                });
+            }
+            
+            shuffleArray(array) {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+                return array;
+            }
+            
+            startTimer() {
+                this.startTime = Date.now();
+                this.timer = setInterval(() => {
+                    this.updateTimer();
+                }, 1000);
+            }
+            
+            updateTimer() {
+                if (!this.startTime) return;
+                
+                this.elapsedTime = Math.floor((Date.now() - this.startTime) / 1000);
+                
+                // Format time as MM:SS
+                const minutes = Math.floor(this.elapsedTime / 60);
+                const seconds = this.elapsedTime % 60;
+                const timeString = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                document.getElementById('tickleboxTimeCount').textContent = timeString;
+                document.getElementById('tickleboxMemoryTimer').textContent = `Time: ${timeString}`;
+                
+                // Check time limit
+                const difficulty = TICKLEBOX_MEMORY_DIFFICULTY.find(d => d.id === this.difficulty);
+                if (this.elapsedTime >= difficulty.time && !this.gameCompleted) {
+                    this.gameOver(false);
+                }
+            }
+            
+            flipCard(cardId) {
+                if (this.gameCompleted) return;
+                
+                const card = this.cards.find(c => c.id === cardId);
+                if (!card || card.flipped || card.matched) return;
+                
+                // Can only flip 2 cards at a time
+                if (this.flippedCards.length >= 2) return;
+                
+                // Flip card
+                card.flipped = true;
+                this.flippedCards.push(card);
+                
+                // Update card UI
+                const cardDiv = document.querySelector(`.ticklebox-memory-card[data-card-id="${cardId}"]`);
+                cardDiv.classList.add('flipped');
+                cardDiv.classList.add('ticklebox-memory-card-pop');
+                
+                setTimeout(() => {
+                    cardDiv.classList.remove('ticklebox-memory-card-pop');
+                }, 300);
+                
+                // Check for match when 2 cards are flipped
+                if (this.flippedCards.length === 2) {
+                    this.moves++;
+                    this.updateStats();
+                    
+                    const [card1, card2] = this.flippedCards;
+                    
+                    if (card1.value === card2.value) {
+                        // Match found
+                        this.handleMatch(card1, card2);
+                    } else {
+                        // No match - flip back after delay
+                        this.handleNoMatch(card1, card2);
+                    }
+                }
+            }
+            
+            handleMatch(card1, card2) {
+                card1.matched = true;
+                card2.matched = true;
+                this.matchedPairs++;
+                
+                // Update card UI
+                const card1Div = document.querySelector(`.ticklebox-memory-card[data-card-id="${card1.id}"]`);
+                const card2Div = document.querySelector(`.ticklebox-memory-card[data-card-id="${card2.id}"]`);
+                
+                card1Div.classList.add('matched');
+                card2Div.classList.add('matched');
+                
+                // Clear flipped cards
+                this.flippedCards = [];
+                
+                // Check if game is complete
+                this.checkGameComplete();
+            }
+            
+            handleNoMatch(card1, card2) {
+                setTimeout(() => {
+                    card1.flipped = false;
+                    card2.flipped = false;
+                    
+                    // Update card UI
+                    const card1Div = document.querySelector(`.ticklebox-memory-card[data-card-id="${card1.id}"]`);
+                    const card2Div = document.querySelector(`.ticklebox-memory-card[data-card-id="${card2.id}"]`);
+                    
+                    card1Div.classList.remove('flipped');
+                    card2Div.classList.remove('flipped');
+                    
+                    // Add shake animation
+                    card1Div.classList.add('ticklebox-memory-card-shake');
+                    card2Div.classList.add('ticklebox-memory-card-shake');
+                    
+                    setTimeout(() => {
+                        card1Div.classList.remove('ticklebox-memory-card-shake');
+                        card2Div.classList.remove('ticklebox-memory-card-shake');
+                    }, 500);
+                    
+                    // Clear flipped cards
+                    this.flippedCards = [];
+                }, 1000);
+            }
+            
+            checkGameComplete() {
+                const difficulty = TICKLEBOX_MEMORY_DIFFICULTY.find(d => d.id === this.difficulty);
+                const totalPairs = difficulty.pairs;
+                
+                if (this.matchedPairs === totalPairs) {
+                    this.gameCompleted = true;
+                    this.gameOver(true);
+                }
+                
+                // Update completion progress
+                const completionPercent = (this.matchedPairs / totalPairs) * 100;
+                document.getElementById('tickleboxCompletionFill').style.width = `${completionPercent}%`;
+            }
+            
+            updateStats() {
+                document.getElementById('tickleboxMovesCount').textContent = this.moves;
+                document.getElementById('tickleboxMatchesCount').textContent = this.matchedPairs;
+                
+                // Calculate accuracy
+                const accuracy = this.moves > 0 ? Math.round((this.matchedPairs / this.moves) * 100) : 0;
+                document.getElementById('tickleboxAccuracyCount').textContent = `${accuracy}%`;
+            }
+            
+            showHint() {
+                if (this.hintUsed || this.gameCompleted || this.flippedCards.length > 0) return;
+                
+                this.hintUsed = true;
+                
+                // Find first two unmatched cards
+                const unmatchedCards = this.cards.filter(card => !card.matched && !card.flipped);
+                if (unmatchedCards.length < 2) return;
+                
+                // Flip hint cards briefly
+                const [hint1, hint2] = unmatchedCards.slice(0, 2);
+                
+                hint1.flipped = true;
+                hint2.flipped = true;
+                
+                const hint1Div = document.querySelector(`.ticklebox-memory-card[data-card-id="${hint1.id}"]`);
+                const hint2Div = document.querySelector(`.ticklebox-memory-card[data-card-id="${hint2.id}"]`);
+                
+                hint1Div.classList.add('flipped');
+                hint2Div.classList.add('flipped');
+                
+                // Flip back after 1 second
+                setTimeout(() => {
+                    hint1.flipped = false;
+                    hint2.flipped = false;
+                    
+                    hint1Div.classList.remove('flipped');
+                    hint2Div.classList.remove('flipped');
+                }, 1000);
+            }
+            
+            revealAllCards() {
+                if (this.gameCompleted) return;
+                
+                this.cards.forEach(card => {
+                    card.flipped = true;
+                    const cardDiv = document.querySelector(`.ticklebox-memory-card[data-card-id="${card.id}"]`);
+                    cardDiv.classList.add('flipped');
+                });
+                
+                // Game over when revealing all
+                setTimeout(() => {
+                    this.gameOver(false);
+                }, 1000);
+            }
+            
+            gameOver(isWin) {
+                this.gameCompleted = true;
+                
+                // Clear timer
+                if (this.timer) {
+                    clearInterval(this.timer);
+                    this.timer = null;
+                }
+                
+                // Calculate score
+                const difficulty = TICKLEBOX_MEMORY_DIFFICULTY.find(d => d.id === this.difficulty);
+                const timeBonus = Math.max(0, difficulty.time - this.elapsedTime);
+                const movesPenalty = this.moves - difficulty.pairs;
+                const accuracy = this.moves > 0 ? Math.round((this.matchedPairs / this.moves) * 100) : 0;
+                
+                let score = 1000;
+                score += timeBonus * 10; // Time bonus
+                score -= movesPenalty * 5; // Moves penalty
+                score = Math.max(0, score);
+                
+                // Show result
+                this.showResult(isWin, score, accuracy);
+            }
+            
+            showResult(isWin, score, accuracy) {
+                const resultDiv = document.getElementById('tickleboxMemoryResult');
+                resultDiv.style.display = 'block';
+                
+                let resultIcon = isWin ? '🏆' : '🎮';
+                let resultTitle = isWin ? 'Amazing! You Win!' : 'Game Over!';
+                let resultMessage = isWin 
+                    ? 'You have an incredible memory!' 
+                    : 'Better luck next time!';
+                
+                resultDiv.innerHTML = `
+                    <div class="ticklebox-memory-result-icon">${resultIcon}</div>
+                    <div class="ticklebox-memory-result-title">${resultTitle}</div>
+                    <div class="ticklebox-memory-result-message">${resultMessage}</div>
+                    
+                    <div class="ticklebox-memory-result-stats">
+                        <div class="ticklebox-memory-result-stat">
+                            <div class="ticklebox-memory-result-stat-value">${score}</div>
+                            <div class="ticklebox-memory-result-stat-label">Score</div>
+                        </div>
+                        <div class="ticklebox-memory-result-stat">
+                            <div class="ticklebox-memory-result-stat-value">${this.moves}</div>
+                            <div class="ticklebox-memory-result-stat-label">Moves</div>
+                        </div>
+                        <div class="ticklebox-memory-result-stat">
+                            <div class="ticklebox-memory-result-stat-value">${accuracy}%</div>
+                            <div class="ticklebox-memory-result-stat-label">Accuracy</div>
+                        </div>
+                    </div>
+                    
+                    <div class="ticklebox-memory-actions">
+                        <button class="ticklebox-memory-btn ticklebox-memory-btn-primary" id="tickleboxPlayAgainBtn">
+                            🔄 Play Again
+                        </button>
+                        <button class="ticklebox-memory-btn ticklebox-memory-btn-secondary" id="tickleboxShareResultBtn">
+                            📤 Share Result
+                        </button>
+                    </div>
+                `;
+                
+                // Add event listeners to new buttons
+                document.getElementById('tickleboxPlayAgainBtn').addEventListener('click', () => {
+                    this.startGame();
+                });
+                
+                document.getElementById('tickleboxShareResultBtn').addEventListener('click', () => {
+                    this.shareResult();
+                });
+                
+                // Scroll to result
+                resultDiv.scrollIntoView({ behavior: 'smooth' });
+            }
+            
+            shareResult() {
+                const difficulty = TICKLEBOX_MEMORY_DIFFICULTY.find(d => d.id === this.difficulty);
+                const theme = TICKLEBOX_MEMORY_THEMES.find(t => t.id === this.theme);
+                
+                const share = new TickleboxShare({
+                    title: 'Memory Game - TickleBox',
+                    text: `I scored ${this.matchedPairs}/${difficulty.pairs} pairs in ${this.elapsedTime}s on TickleBox Memory Game! 🧠`,
+                    url: window.location.href
+                });
+                share.openModal();
+            }
+        }
+        
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            // Load navbar and footer
+            fetch('../components/navbar.html')
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById('tickleboxNavbarContainer').innerHTML = html;
+                    initTheme();
+                    initSearch();
+                    initDropdowns();
+                    initMobileMenu();
+                });
+            
+            fetch('../components/footer.html')
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById('tickleboxFooterContainer').innerHTML = html;
+                    initFooter();
+                });
+            
+            // Initialize memory game
+            window.tickleboxMemoryGame = new TickleboxMemoryGame();
+        });
+    </script>
+</body>
+</html>

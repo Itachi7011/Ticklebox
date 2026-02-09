@@ -1,0 +1,136 @@
+<!-- games/quiz.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Quiz - TickleBox</title>
+    <link rel="stylesheet" href="../css/ticklebox-styles.css">
+    <link rel="stylesheet" href="../css/ticklebox-animations.css">
+    <link rel="stylesheet" href="../css/games/quiz.css">
+</head>
+<body>
+    <!-- PASTE NAVBAR HERE -->
+    <div id="tickleboxNavbarContainer"></div>
+
+    <main class="ticklebox-container">
+        <div class="ticklebox-game-header">
+            <div class="ticklebox-game-header-icon">❓</div>
+            <div class="ticklebox-game-header-info">
+                <h1 class="ticklebox-game-title">Interactive Quiz</h1>
+                <p class="ticklebox-game-subtitle">Test your knowledge with fun quizzes and animated feedback</p>
+                <div class="ticklebox-game-meta">
+                    <span class="ticklebox-game-rating">⭐ 4.8 (1M+ plays)</span>
+                    <span class="ticklebox-game-category">🎮 Quiz</span>
+                    <span class="ticklebox-game-time">⏱️ 5-10 min</span>
+                </div>
+            </div>
+            <button class="ticklebox-game-share" id="tickleboxQuizShare">
+                <svg viewBox="0 0 24 24" width="20" height="20">
+                    <path fill="currentColor" d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/>
+                </svg>
+                Share
+            </button>
+        </div>
+
+        <div class="ticklebox-game-content">
+            <!-- Quiz selection -->
+            <div class="ticklebox-quiz-selection">
+                <h2 class="ticklebox-section-title">Choose a Quiz Category</h2>
+                <div class="ticklebox-quiz-categories">
+                    <button class="ticklebox-quiz-category active" data-category="pop-culture">
+                        <span class="ticklebox-quiz-category-icon">🎬</span>
+                        <span class="ticklebox-quiz-category-title">Pop Culture</span>
+                    </button>
+                    <button class="ticklebox-quiz-category" data-category="science">
+                        <span class="ticklebox-quiz-category-icon">🔬</span>
+                        <span class="ticklebox-quiz-category-title">Science</span>
+                    </button>
+                    <button class="ticklebox-quiz-category" data-category="history">
+                        <span class="ticklebox-quiz-category-icon">🏛️</span>
+                        <span class="ticklebox-quiz-category-title">History</span>
+                    </button>
+                    <button class="ticklebox-quiz-category" data-category="geography">
+                        <span class="ticklebox-quiz-category-icon">🗺️</span>
+                        <span class="ticklebox-quiz-category-title">Geography</span>
+                    </button>
+                    <button class="ticklebox-quiz-category" data-category="sports">
+                        <span class="ticklebox-quiz-category-icon">⚽</span>
+                        <span class="ticklebox-quiz-category-title">Sports</span>
+                    </button>
+                    <button class="ticklebox-quiz-category" data-category="random">
+                        <span class="ticklebox-quiz-category-icon">🎲</span>
+                        <span class="ticklebox-quiz-category-title">Random</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Quiz container -->
+            <div class="ticklebox-quiz-container" id="tickleboxQuizContainer">
+                <!-- Quiz will be loaded here -->
+            </div>
+
+            <!-- Quiz results -->
+            <div class="ticklebox-quiz-results" id="tickleboxQuizResults" style="display: none;">
+                <!-- Results will be shown here -->
+            </div>
+        </div>
+    </main>
+
+   <!-- components/footer.html - FIXED VERSION -->
+
+    <div id="tickleboxFooterContainer"></div>
+
+    <!-- Screenshot Modal -->
+    <div class="ticklebox-modal" id="tickleboxScreenshotModal">
+        <div class="ticklebox-modal-content">
+            <div class="ticklebox-modal-header">
+                <div class="ticklebox-modal-title">Share Your Result</div>
+                <button class="ticklebox-modal-close">&times;</button>
+            </div>
+            <div class="ticklebox-modal-body">
+                <div class="ticklebox-screenshot-preview" id="tickleboxScreenshotPreview"></div>
+                <div class="ticklebox-screenshot-actions">
+                    <button class="ticklebox-btn-primary" id="tickleboxScreenshotDownload">
+                        <svg viewBox="0 0 24 24" width="16" height="16">
+                            <path fill="currentColor" d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
+                        </svg>
+                        Download Image
+                    </button>
+                    <button class="ticklebox-btn-secondary" id="tickleboxScreenshotShare">
+                        Share Online
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/ticklebox-main.js"></script>
+    <script src="../js/games/quiz.js"></script>
+    <script>
+        // Load navbar and footer
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load navbar
+            fetch('../components/navbar.html')
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById('tickleboxNavbarContainer').innerHTML = html;
+                    // Reinitialize navbar functionality
+                    initTheme();
+                    initSearch();
+                    initDropdowns();
+                    initMobileMenu();
+                });
+            
+            // Load footer
+            fetch('../components/footer.html')
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById('tickleboxFooterContainer').innerHTML = html;
+                    // Reinitialize footer functionality
+                    initFooter();
+                });
+        });
+    </script>
+</body>
+</html>

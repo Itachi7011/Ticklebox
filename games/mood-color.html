@@ -1,0 +1,1000 @@
+<!-- games/mood-color.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mood Color Shader - TickleBox</title>
+    <link rel="stylesheet" href="../css/ticklebox-styles.css">
+    <link rel="stylesheet" href="../css/ticklebox-animations.css">
+    <style>
+        .ticklebox-mood-container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        .ticklebox-mood-display {
+            height: 300px;
+            border-radius: var(--ticklebox-radius-lg);
+            margin: var(--ticklebox-space-lg) 0;
+            position: relative;
+            overflow: hidden;
+            transition: background-color 1s ease;
+        }
+        
+        .ticklebox-mood-gradient {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        
+        .ticklebox-mood-controls {
+            background: var(--ticklebox-bg-card);
+            border-radius: var(--ticklebox-radius-lg);
+            padding: var(--ticklebox-space-xl);
+            margin: var(--ticklebox-space-lg) 0;
+        }
+        
+        .ticklebox-mood-colors {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: var(--ticklebox-space);
+            margin: var(--ticklebox-space) 0;
+        }
+        
+        .ticklebox-mood-color {
+            aspect-ratio: 1;
+            border-radius: var(--ticklebox-radius);
+            cursor: pointer;
+            transition: all var(--ticklebox-transition-fast);
+            border: 3px solid transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+        
+        .ticklebox-mood-color:hover {
+            transform: scale(1.05);
+            box-shadow: var(--ticklebox-shadow-lg);
+        }
+        
+        .ticklebox-mood-color.active {
+            border-color: white;
+            box-shadow: 0 0 0 3px var(--ticklebox-primary), var(--ticklebox-shadow-lg);
+            transform: scale(1.1);
+        }
+        
+        .ticklebox-mood-sliders {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--ticklebox-space);
+            margin: var(--ticklebox-space-lg) 0;
+        }
+        
+        .ticklebox-mood-slider-group {
+            margin-bottom: var(--ticklebox-space);
+        }
+        
+        .ticklebox-mood-slider-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: var(--ticklebox-space-sm);
+            font-size: 0.875rem;
+            color: var(--ticklebox-text-secondary);
+        }
+        
+        .ticklebox-mood-slider {
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            background: var(--ticklebox-bg-tertiary);
+            outline: none;
+            -webkit-appearance: none;
+        }
+        
+        .ticklebox-mood-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--ticklebox-primary);
+            cursor: pointer;
+            border: 2px solid white;
+            box-shadow: var(--ticklebox-shadow);
+        }
+        
+        .ticklebox-mood-presets {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: var(--ticklebox-space);
+            margin: var(--ticklebox-space) 0;
+        }
+        
+        .ticklebox-mood-preset {
+            padding: var(--ticklebox-space);
+            border-radius: var(--ticklebox-radius);
+            cursor: pointer;
+            transition: all var(--ticklebox-transition-fast);
+            text-align: center;
+            border: 2px solid var(--ticklebox-border);
+            background: var(--ticklebox-bg-secondary);
+        }
+        
+        .ticklebox-mood-preset:hover {
+            transform: translateY(-2px);
+            border-color: var(--ticklebox-primary);
+        }
+        
+        .ticklebox-mood-preset-icon {
+            font-size: 2rem;
+            margin-bottom: var(--ticklebox-space-sm);
+        }
+        
+        .ticklebox-mood-preset-title {
+            font-weight: 600;
+            margin-bottom: var(--ticklebox-space-xs);
+        }
+        
+        .ticklebox-mood-preset-desc {
+            font-size: 0.75rem;
+            color: var(--ticklebox-text-tertiary);
+        }
+        
+        .ticklebox-mood-sounds {
+            margin-top: var(--ticklebox-space-lg);
+        }
+        
+        .ticklebox-mood-sound-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: var(--ticklebox-space-sm);
+            margin: var(--ticklebox-space) 0;
+        }
+        
+        .ticklebox-mood-sound {
+            padding: var(--ticklebox-space);
+            border-radius: var(--ticklebox-radius);
+            cursor: pointer;
+            transition: all var(--ticklebox-transition-fast);
+            text-align: center;
+            border: 2px solid var(--ticklebox-border);
+            background: var(--ticklebox-bg-secondary);
+        }
+        
+        .ticklebox-mood-sound:hover {
+            border-color: var(--ticklebox-primary);
+            transform: translateY(-2px);
+        }
+        
+        .ticklebox-mood-sound.active {
+            border-color: var(--ticklebox-primary);
+            background: var(--ticklebox-primary);
+            color: white;
+        }
+        
+        .ticklebox-mood-sound-icon {
+            font-size: 1.5rem;
+            margin-bottom: var(--ticklebox-space-xs);
+        }
+        
+        .ticklebox-mood-sound-label {
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        
+        .ticklebox-mood-volume {
+            margin-top: var(--ticklebox-space);
+        }
+        
+        .ticklebox-mood-actions {
+            display: flex;
+            gap: var(--ticklebox-space);
+            margin-top: var(--ticklebox-space-lg);
+            justify-content: center;
+        }
+        
+        .ticklebox-mood-btn {
+            padding: var(--ticklebox-space-sm) var(--ticklebox-space-lg);
+            border-radius: var(--ticklebox-radius);
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--ticklebox-transition-fast);
+            display: flex;
+            align-items: center;
+            gap: var(--ticklebox-space-xs);
+        }
+        
+        .ticklebox-mood-btn-primary {
+            background: var(--ticklebox-primary);
+            color: white;
+        }
+        
+        .ticklebox-mood-btn-primary:hover {
+            background: var(--ticklebox-primary-dark);
+            transform: translateY(-2px);
+        }
+        
+        .ticklebox-mood-btn-secondary {
+            background: var(--ticklebox-bg-secondary);
+            color: var(--ticklebox-text-primary);
+            border: 2px solid var(--ticklebox-border);
+        }
+        
+        .ticklebox-mood-btn-secondary:hover {
+            border-color: var(--ticklebox-primary);
+            transform: translateY(-2px);
+        }
+        
+        .ticklebox-mood-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--ticklebox-space);
+            padding: var(--ticklebox-space-sm);
+            background: var(--ticklebox-bg-secondary);
+            border-radius: var(--ticklebox-radius);
+        }
+        
+        .ticklebox-mood-hex {
+            font-family: monospace;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--ticklebox-primary);
+        }
+        
+        .ticklebox-mood-name {
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+        
+        .ticklebox-mood-particles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        
+        .ticklebox-mood-particle {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.3;
+            animation: ticklebox-float 10s infinite ease-in-out;
+        }
+        
+        .ticklebox-mood-timer {
+            display: flex;
+            align-items: center;
+            gap: var(--ticklebox-space);
+            margin: var(--ticklebox-space) 0;
+        }
+        
+        .ticklebox-mood-timer-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid var(--ticklebox-border);
+            background: var(--ticklebox-bg-secondary);
+            color: var(--ticklebox-text-primary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--ticklebox-transition-fast);
+        }
+        
+        .ticklebox-mood-timer-btn:hover {
+            border-color: var(--ticklebox-primary);
+            transform: scale(1.1);
+        }
+        
+        .ticklebox-mood-timer-btn.active {
+            background: var(--ticklebox-primary);
+            color: white;
+            border-color: var(--ticklebox-primary);
+        }
+        
+        .ticklebox-mood-timer-display {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--ticklebox-primary);
+            min-width: 60px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+   <!-- components/navbar.html - FIXED VERSION -->
+
+
+    <div id="tickleboxNavbarContainer"></div>
+
+    <main class="ticklebox-container">
+        <div class="ticklebox-game-header">
+            <div class="ticklebox-game-header-icon">🌈</div>
+            <div class="ticklebox-game-header-info">
+                <h1 class="ticklebox-game-title">Mood Color Shader</h1>
+                <p class="ticklebox-game-subtitle">Change colors and ambiance with relaxing sounds</p>
+                <div class="ticklebox-game-meta">
+                    <span class="ticklebox-game-rating">⭐ 4.5 (400K+ plays)</span>
+                    <span class="ticklebox-game-category">🧘 Relaxation</span>
+                    <span class="ticklebox-game-time">⏱️ Unlimited</span>
+                </div>
+            </div>
+            <button class="ticklebox-game-share" id="tickleboxMoodShare">
+                <svg viewBox="0 0 24 24" width="20" height="20">
+                    <path fill="currentColor" d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/>
+                </svg>
+                Share
+            </button>
+        </div>
+
+        <div class="ticklebox-game-content">
+            <div class="ticklebox-mood-container">
+                <div class="ticklebox-mood-display" id="tickleboxMoodDisplay">
+                    <div class="ticklebox-mood-gradient" id="tickleboxMoodGradient"></div>
+                    <div class="ticklebox-mood-particles" id="tickleboxMoodParticles"></div>
+                </div>
+                
+                <div class="ticklebox-mood-info">
+                    <div class="ticklebox-mood-name" id="tickleboxMoodName">Calm Blue</div>
+                    <div class="ticklebox-mood-hex" id="tickleboxMoodHex">#667eea</div>
+                </div>
+                
+                <div class="ticklebox-mood-controls">
+                    <h2 class="ticklebox-section-title">Color Palette</h2>
+                    <div class="ticklebox-mood-colors" id="tickleboxMoodColors">
+                        <!-- Colors will be loaded by JavaScript -->
+                    </div>
+                    
+                    <div class="ticklebox-mood-sliders">
+                        <div class="ticklebox-mood-slider-group">
+                            <div class="ticklebox-mood-slider-label">
+                                <span>Brightness</span>
+                                <span id="tickleboxBrightnessValue">50%</span>
+                            </div>
+                            <input type="range" min="0" max="100" value="50" class="ticklebox-mood-slider" id="tickleboxBrightness">
+                        </div>
+                        
+                        <div class="ticklebox-mood-slider-group">
+                            <div class="ticklebox-mood-slider-label">
+                                <span>Saturation</span>
+                                <span id="tickleboxSaturationValue">80%</span>
+                            </div>
+                            <input type="range" min="0" max="100" value="80" class="ticklebox-mood-slider" id="tickleboxSaturation">
+                        </div>
+                        
+                        <div class="ticklebox-mood-slider-group">
+                            <div class="ticklebox-mood-slider-label">
+                                <span>Animation Speed</span>
+                                <span id="tickleboxSpeedValue">Medium</span>
+                            </div>
+                            <input type="range" min="1" max="10" value="5" class="ticklebox-mood-slider" id="tickleboxSpeed">
+                        </div>
+                    </div>
+                    
+                    <h2 class="ticklebox-section-title">Quick Presets</h2>
+                    <div class="ticklebox-mood-presets" id="tickleboxMoodPresets">
+                        <!-- Presets will be loaded by JavaScript -->
+                    </div>
+                    
+                    <h2 class="ticklebox-section-title">Ambient Sounds</h2>
+                    <div class="ticklebox-mood-timer">
+                        <div class="ticklebox-mood-timer-btn" data-time="0">Off</div>
+                        <div class="ticklebox-mood-timer-btn" data-time="300">5min</div>
+                        <div class="ticklebox-mood-timer-btn" data-time="600">10min</div>
+                        <div class="ticklebox-mood-timer-btn" data-time="900">15min</div>
+                        <div class="ticklebox-mood-timer-display" id="tickleboxTimerDisplay">00:00</div>
+                    </div>
+                    
+                    <div class="ticklebox-mood-sound-grid" id="tickleboxMoodSounds">
+                        <!-- Sounds will be loaded by JavaScript -->
+                    </div>
+                    
+                    <div class="ticklebox-mood-volume">
+                        <div class="ticklebox-mood-slider-label">
+                            <span>Volume</span>
+                            <span id="tickleboxVolumeValue">50%</span>
+                        </div>
+                        <input type="range" min="0" max="100" value="50" class="ticklebox-mood-slider" id="tickleboxVolume">
+                    </div>
+                    
+                    <div class="ticklebox-mood-actions">
+                        <button class="ticklebox-mood-btn ticklebox-mood-btn-secondary" id="tickleboxMoodRandom">
+                            🎲 Random Mood
+                        </button>
+                        <button class="ticklebox-mood-btn ticklebox-mood-btn-primary" id="tickleboxMoodSave">
+                            💾 Save Preset
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- components/footer.html - FIXED VERSION -->
+
+    <div id="tickleboxFooterContainer"></div>
+
+    <script src="../js/ticklebox-main.js"></script>
+    <script>
+        // Color data
+        const TICKLEBOX_MOOD_COLORS = [
+            { name: 'Calm Blue', color: '#667eea', icon: '💙' },
+            { name: 'Serene Green', color: '#4facfe', icon: '💚' },
+            { name: 'Warm Orange', color: '#f093fb', icon: '🧡' },
+            { name: 'Peaceful Purple', color: '#764ba2', icon: '💜' },
+            { name: 'Sunset Pink', color: '#f5576c', icon: '💖' },
+            { name: 'Ocean Teal', color: '#00f2fe', icon: '🌊' },
+            { name: 'Forest Green', color: '#43e97b', icon: '🌿' },
+            { name: 'Sunshine Yellow', color: '#fee140', icon: '☀️' },
+            { name: 'Twilight Indigo', color: '#8a2387', icon: '🌌' },
+            { name: 'Mist Gray', color: '#a8c0ff', icon: '🌫️' },
+            { name: 'Coral Reef', color: '#fa709a', icon: '🐠' },
+            { name: 'Golden Hour', color: '#f6d365', icon: '🌟' }
+        ];
+        
+        // Mood presets
+        const TICKLEBOX_MOOD_PRESETS = [
+            {
+                name: 'Relaxation',
+                icon: '🧘',
+                description: 'Calm and peaceful',
+                colors: ['#667eea', '#764ba2'],
+                brightness: 40,
+                saturation: 70
+            },
+            {
+                name: 'Focus',
+                icon: '🎯',
+                description: 'Clear and concentrated',
+                colors: ['#4facfe', '#00f2fe'],
+                brightness: 60,
+                saturation: 85
+            },
+            {
+                name: 'Energy',
+                icon: '⚡',
+                description: 'Bright and energetic',
+                colors: ['#f093fb', '#f5576c'],
+                brightness: 80,
+                saturation: 95
+            },
+            {
+                name: 'Sleep',
+                icon: '😴',
+                description: 'Soft and soothing',
+                colors: ['#8a2387', '#f27121'],
+                brightness: 20,
+                saturation: 50
+            },
+            {
+                name: 'Creativity',
+                icon: '🎨',
+                description: 'Vibrant and inspiring',
+                colors: ['#fa709a', '#fee140'],
+                brightness: 75,
+                saturation: 90
+            },
+            {
+                name: 'Meditation',
+                icon: '🕉️',
+                description: 'Balanced and centered',
+                colors: ['#43e97b', '#38f9d7'],
+                brightness: 50,
+                saturation: 80
+            }
+        ];
+        
+        // Sound data
+        const TICKLEBOX_MOOD_SOUNDS = [
+            { name: 'Rain', icon: '🌧️', url: 'https://assets.mixkit.co/sfx/preview/mixkit-rain-loop-1249.mp3' },
+            { name: 'Waves', icon: '🌊', url: 'https://assets.mixkit.co/sfx/preview/mixkit-ocean-waves-loop-1248.mp3' },
+            { name: 'Forest', icon: '🌳', url: 'https://assets.mixkit.co/sfx/preview/mixkit-forest-ambience-1237.mp3' },
+            { name: 'Fireplace', icon: '🔥', url: 'https://assets.mixkit.co/sfx/preview/mixkit-crackling-fireplace-1240.mp3' },
+            { name: 'White Noise', icon: '📻', url: 'https://assets.mixkit.co/sfx/preview/mixkit-white-noise-loop-1247.mp3' },
+            { name: 'Birds', icon: '🐦', url: 'https://assets.mixkit.co/sfx/preview/mixkit-birds-chirping-1241.mp3' },
+            { name: 'Cafe', icon: '☕', url: 'https://assets.mixkit.co/sfx/preview/mixkit-people-cafe-ambience-1234.mp3' },
+            { name: 'Wind', icon: '💨', url: 'https://assets.mixkit.co/sfx/preview/mixkit-wind-loop-1245.mp3' }
+        ];
+        
+        class TickleboxMoodGame {
+            constructor() {
+                this.currentColors = ['#667eea', '#764ba2'];
+                this.currentBrightness = 50;
+                this.currentSaturation = 80;
+                this.currentSpeed = 5;
+                this.currentSound = null;
+                this.audioContext = null;
+                this.audioSource = null;
+                this.gainNode = null;
+                this.isPlaying = false;
+                this.timer = null;
+                this.timerDuration = 0;
+                this.timerRemaining = 0;
+                this.particles = [];
+                this.init();
+            }
+            
+            init() {
+                this.setupAudio();
+                this.loadColorPalette();
+                this.loadPresets();
+                this.loadSounds();
+                this.setupEventListeners();
+                this.updateDisplay();
+                this.createParticles();
+            }
+            
+            setupAudio() {
+                try {
+                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    this.gainNode = this.audioContext.createGain();
+                    this.gainNode.connect(this.audioContext.destination);
+                    this.gainNode.gain.value = 0.5;
+                } catch (e) {
+                    console.log('Web Audio API not supported');
+                }
+            }
+            
+            loadColorPalette() {
+                const colorsDiv = document.getElementById('tickleboxMoodColors');
+                TICKLEBOX_MOOD_COLORS.forEach(color => {
+                    const colorDiv = document.createElement('div');
+                    colorDiv.className = 'ticklebox-mood-color';
+                    colorDiv.style.background = color.color;
+                    colorDiv.dataset.color = color.color;
+                    colorDiv.dataset.name = color.name;
+                    colorDiv.innerHTML = color.icon;
+                    
+                    if (color.color === this.currentColors[0]) {
+                        colorDiv.classList.add('active');
+                    }
+                    
+                    colorDiv.addEventListener('click', () => {
+                        this.selectColor(color.color, color.name);
+                    });
+                    
+                    colorsDiv.appendChild(colorDiv);
+                });
+            }
+            
+            loadPresets() {
+                const presetsDiv = document.getElementById('tickleboxMoodPresets');
+                TICKLEBOX_MOOD_PRESETS.forEach(preset => {
+                    const presetDiv = document.createElement('div');
+                    presetDiv.className = 'ticklebox-mood-preset';
+                    presetDiv.dataset.preset = preset.name.toLowerCase();
+                    presetDiv.innerHTML = `
+                        <div class="ticklebox-mood-preset-icon">${preset.icon}</div>
+                        <div class="ticklebox-mood-preset-title">${preset.name}</div>
+                        <div class="ticklebox-mood-preset-desc">${preset.description}</div>
+                    `;
+                    
+                    presetDiv.addEventListener('click', () => {
+                        this.applyPreset(preset);
+                    });
+                    
+                    presetsDiv.appendChild(presetDiv);
+                });
+            }
+            
+            loadSounds() {
+                const soundsDiv = document.getElementById('tickleboxMoodSounds');
+                TICKLEBOX_MOOD_SOUNDS.forEach(sound => {
+                    const soundDiv = document.createElement('div');
+                    soundDiv.className = 'ticklebox-mood-sound';
+                    soundDiv.dataset.sound = sound.name.toLowerCase();
+                    soundDiv.innerHTML = `
+                        <div class="ticklebox-mood-sound-icon">${sound.icon}</div>
+                        <div class="ticklebox-mood-sound-label">${sound.name}</div>
+                    `;
+                    
+                    soundDiv.addEventListener('click', () => {
+                        this.playSound(sound);
+                    });
+                    
+                    soundsDiv.appendChild(soundDiv);
+                });
+            }
+            
+            setupEventListeners() {
+                // Sliders
+                document.getElementById('tickleboxBrightness').addEventListener('input', (e) => {
+                    this.currentBrightness = parseInt(e.target.value);
+                    document.getElementById('tickleboxBrightnessValue').textContent = `${this.currentBrightness}%`;
+                    this.updateDisplay();
+                });
+                
+                document.getElementById('tickleboxSaturation').addEventListener('input', (e) => {
+                    this.currentSaturation = parseInt(e.target.value);
+                    document.getElementById('tickleboxSaturationValue').textContent = `${this.currentSaturation}%`;
+                    this.updateDisplay();
+                });
+                
+                document.getElementById('tickleboxSpeed').addEventListener('input', (e) => {
+                    this.currentSpeed = parseInt(e.target.value);
+                    const speeds = ['Very Slow', 'Slow', 'Medium Slow', 'Slow Medium', 'Medium', 'Fast Medium', 'Medium Fast', 'Fast', 'Very Fast', 'Extreme'];
+                    document.getElementById('tickleboxSpeedValue').textContent = speeds[this.currentSpeed - 1] || 'Medium';
+                    this.updateParticles();
+                });
+                
+                document.getElementById('tickleboxVolume').addEventListener('input', (e) => {
+                    const volume = parseInt(e.target.value) / 100;
+                    document.getElementById('tickleboxVolumeValue').textContent = `${e.target.value}%`;
+                    if (this.gainNode) {
+                        this.gainNode.gain.value = volume;
+                    }
+                });
+                
+                // Timer buttons
+                document.querySelectorAll('.ticklebox-mood-timer-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const time = parseInt(btn.dataset.time);
+                        this.setTimer(time);
+                    });
+                });
+                
+                // Actions
+                document.getElementById('tickleboxMoodRandom').addEventListener('click', () => {
+                    this.randomMood();
+                });
+                
+                document.getElementById('tickleboxMoodSave').addEventListener('click', () => {
+                    this.savePreset();
+                });
+                
+                // Share button
+                document.getElementById('tickleboxMoodShare').addEventListener('click', () => {
+                    this.shareMood();
+                });
+            }
+            
+            selectColor(color, name) {
+                this.currentColors = [color, this.adjustColor(color, 30)];
+                
+                // Update active color
+                document.querySelectorAll('.ticklebox-mood-color').forEach(c => {
+                    c.classList.remove('active');
+                });
+                document.querySelector(`.ticklebox-mood-color[data-color="${color}"]`).classList.add('active');
+                
+                // Update info
+                document.getElementById('tickleboxMoodName').textContent = name;
+                document.getElementById('tickleboxMoodHex').textContent = color;
+                
+                this.updateDisplay();
+            }
+            
+            adjustColor(color, amount) {
+                let hex = color.replace('#', '');
+                if (hex.length === 3) {
+                    hex = hex.split('').map(c => c + c).join('');
+                }
+                
+                let r = parseInt(hex.substr(0, 2), 16);
+                let g = parseInt(hex.substr(2, 2), 16);
+                let b = parseInt(hex.substr(4, 2), 16);
+                
+                // Adjust brightness
+                r = Math.max(0, Math.min(255, r + amount));
+                g = Math.max(0, Math.min(255, g + amount));
+                b = Math.max(0, Math.min(255, b + amount));
+                
+                return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
+            }
+            
+            applyPreset(preset) {
+                this.currentColors = preset.colors;
+                this.currentBrightness = preset.brightness;
+                this.currentSaturation = preset.saturation;
+                
+                // Update sliders
+                document.getElementById('tickleboxBrightness').value = preset.brightness;
+                document.getElementById('tickleboxSaturation').value = preset.saturation;
+                document.getElementById('tickleboxBrightnessValue').textContent = `${preset.brightness}%`;
+                document.getElementById('tickleboxSaturationValue').textContent = `${preset.saturation}%`;
+                
+                // Update info
+                document.getElementById('tickleboxMoodName').textContent = preset.name;
+                document.getElementById('tickleboxMoodHex').textContent = preset.colors[0];
+                
+                this.updateDisplay();
+            }
+            
+            async playSound(sound) {
+                if (!this.audioContext) return;
+                
+                // Stop current sound
+                if (this.audioSource) {
+                    this.audioSource.stop();
+                    this.audioSource = null;
+                }
+                
+                // Remove active class from all sounds
+                document.querySelectorAll('.ticklebox-mood-sound').forEach(s => {
+                    s.classList.remove('active');
+                });
+                
+                // Add active class to selected sound
+                document.querySelector(`.ticklebox-mood-sound[data-sound="${sound.name.toLowerCase()}"]`).classList.add('active');
+                
+                try {
+                    const response = await fetch(sound.url);
+                    const arrayBuffer = await response.arrayBuffer();
+                    const audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
+                    
+                    this.audioSource = this.audioContext.createBufferSource();
+                    this.audioSource.buffer = audioBuffer;
+                    this.audioSource.connect(this.gainNode);
+                    this.audioSource.loop = true;
+                    this.audioSource.start();
+                    this.isPlaying = true;
+                } catch (error) {
+                    console.log('Error playing sound:', error);
+                }
+            }
+            
+            setTimer(seconds) {
+                // Clear existing timer
+                if (this.timer) {
+                    clearInterval(this.timer);
+                }
+                
+                // Update timer buttons
+                document.querySelectorAll('.ticklebox-mood-timer-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                
+                if (seconds > 0) {
+                    document.querySelector(`.ticklebox-mood-timer-btn[data-time="${seconds}"]`).classList.add('active');
+                } else {
+                    document.querySelector('.ticklebox-mood-timer-btn[data-time="0"]').classList.add('active');
+                }
+                
+                this.timerDuration = seconds;
+                this.timerRemaining = seconds;
+                
+                if (seconds > 0) {
+                    this.timer = setInterval(() => {
+                        this.timerRemaining--;
+                        this.updateTimerDisplay();
+                        
+                        if (this.timerRemaining <= 0) {
+                            clearInterval(this.timer);
+                            this.stopSound();
+                            this.updateTimerDisplay();
+                        }
+                    }, 1000);
+                }
+                
+                this.updateTimerDisplay();
+            }
+            
+            updateTimerDisplay() {
+                const minutes = Math.floor(this.timerRemaining / 60);
+                const seconds = this.timerRemaining % 60;
+                document.getElementById('tickleboxTimerDisplay').textContent = 
+                    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }
+            
+            stopSound() {
+                if (this.audioSource) {
+                    this.audioSource.stop();
+                    this.audioSource = null;
+                }
+                this.isPlaying = false;
+                
+                // Remove active class from all sounds
+                document.querySelectorAll('.ticklebox-mood-sound').forEach(s => {
+                    s.classList.remove('active');
+                });
+            }
+            
+            updateDisplay() {
+                const display = document.getElementById('tickleboxMoodDisplay');
+                const gradient = document.getElementById('tickleboxMoodGradient');
+                
+                // Calculate adjusted colors based on brightness and saturation
+                const adjustedColors = this.currentColors.map(color => 
+                    this.adjustColorForSettings(color)
+                );
+                
+                // Apply gradient
+                gradient.style.background = `linear-gradient(135deg, ${adjustedColors[0]}, ${adjustedColors[1]})`;
+                
+                // Apply brightness to display
+                display.style.filter = `brightness(${this.currentBrightness / 50}) saturate(${this.currentSaturation / 100})`;
+            }
+            
+            adjustColorForSettings(color) {
+                // Convert hex to RGB
+                let hex = color.replace('#', '');
+                if (hex.length === 3) {
+                    hex = hex.split('').map(c => c + c).join('');
+                }
+                
+                let r = parseInt(hex.substr(0, 2), 16);
+                let g = parseInt(hex.substr(2, 2), 16);
+                let b = parseInt(hex.substr(4, 2), 16);
+                
+                // Adjust for brightness setting
+                const brightnessFactor = this.currentBrightness / 50;
+                r = Math.max(0, Math.min(255, r * brightnessFactor));
+                g = Math.max(0, Math.min(255, g * brightnessFactor));
+                b = Math.max(0, Math.min(255, b * brightnessFactor));
+                
+                return `rgb(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)})`;
+            }
+            
+            createParticles() {
+                const particlesDiv = document.getElementById('tickleboxMoodParticles');
+                particlesDiv.innerHTML = '';
+                this.particles = [];
+                
+                for (let i = 0; i < 30; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'ticklebox-mood-particle';
+                    
+                    const size = Math.random() * 30 + 10;
+                    particle.style.width = `${size}px`;
+                    particle.style.height = `${size}px`;
+                    
+                    // Use current colors for particles
+                    const colorIndex = Math.floor(Math.random() * this.currentColors.length);
+                    const baseColor = this.currentColors[colorIndex];
+                    const opacity = Math.random() * 0.4 + 0.1;
+                    particle.style.background = `${baseColor}${Math.round(opacity * 255).toString(16).padStart(2, '0')}`;
+                    
+                    // Random position
+                    particle.style.left = `${Math.random() * 100}%`;
+                    particle.style.top = `${Math.random() * 100}%`;
+                    
+                    // Animation
+                    const duration = (Math.random() * 20 + 10) * (6 / this.currentSpeed);
+                    const delay = Math.random() * 5;
+                    particle.style.animationDuration = `${duration}s`;
+                    particle.style.animationDelay = `${delay}s`;
+                    
+                    particlesDiv.appendChild(particle);
+                    this.particles.push({
+                        element: particle,
+                        baseColor: baseColor,
+                        x: Math.random() * 100,
+                        y: Math.random() * 100,
+                        speedX: (Math.random() - 0.5) * 0.5,
+                        speedY: (Math.random() - 0.5) * 0.5
+                    });
+                }
+                
+                // Start animation loop
+                this.animateParticles();
+            }
+            
+            animateParticles() {
+                const update = () => {
+                    this.particles.forEach(particle => {
+                        // Update position
+                        particle.x += particle.speedX * (this.currentSpeed / 5);
+                        particle.y += particle.speedY * (this.currentSpeed / 5);
+                        
+                        // Wrap around edges
+                        if (particle.x > 100) particle.x = 0;
+                        if (particle.x < 0) particle.x = 100;
+                        if (particle.y > 100) particle.y = 0;
+                        if (particle.y < 0) particle.y = 100;
+                        
+                        // Apply position
+                        particle.element.style.left = `${particle.x}%`;
+                        particle.element.style.top = `${particle.y}%`;
+                        
+                        // Update color based on current mood
+                        const colorIndex = Math.floor(Math.random() * this.currentColors.length);
+                        const newColor = this.currentColors[colorIndex];
+                        if (particle.baseColor !== newColor) {
+                            particle.baseColor = newColor;
+                            const opacity = Math.random() * 0.4 + 0.1;
+                            particle.element.style.background = `${newColor}${Math.round(opacity * 255).toString(16).padStart(2, '0')}`;
+                        }
+                    });
+                    
+                    requestAnimationFrame(update);
+                };
+                
+                update();
+            }
+            
+            updateParticles() {
+                // Update animation speeds
+                this.particles.forEach(particle => {
+                    const duration = (Math.random() * 20 + 10) * (6 / this.currentSpeed);
+                    particle.element.style.animationDuration = `${duration}s`;
+                });
+            }
+            
+            randomMood() {
+                // Random color
+                const randomColor = TICKLEBOX_MOOD_COLORS[Math.floor(Math.random() * TICKLEBOX_MOOD_COLORS.length)];
+                this.selectColor(randomColor.color, randomColor.name);
+                
+                // Random brightness and saturation
+                this.currentBrightness = Math.floor(Math.random() * 60) + 20;
+                this.currentSaturation = Math.floor(Math.random() * 60) + 40;
+                this.currentSpeed = Math.floor(Math.random() * 8) + 2;
+                
+                // Update sliders
+                document.getElementById('tickleboxBrightness').value = this.currentBrightness;
+                document.getElementById('tickleboxSaturation').value = this.currentSaturation;
+                document.getElementById('tickleboxSpeed').value = this.currentSpeed;
+                
+                document.getElementById('tickleboxBrightnessValue').textContent = `${this.currentBrightness}%`;
+                document.getElementById('tickleboxSaturationValue').textContent = `${this.currentSaturation}%`;
+                
+                const speeds = ['Very Slow', 'Slow', 'Medium Slow', 'Slow Medium', 'Medium', 'Fast Medium', 'Medium Fast', 'Fast', 'Very Fast', 'Extreme'];
+                document.getElementById('tickleboxSpeedValue').textContent = speeds[this.currentSpeed - 1] || 'Medium';
+                
+                // Random sound
+                if (Math.random() > 0.5) {
+                    const randomSound = TICKLEBOX_MOOD_SOUNDS[Math.floor(Math.random() * TICKLEBOX_MOOD_SOUNDS.length)];
+                    this.playSound(randomSound);
+                }
+                
+                this.updateDisplay();
+                this.updateParticles();
+            }
+            
+            savePreset() {
+                const name = prompt('Enter a name for your preset:', 'My Mood');
+                if (name) {
+                    const preset = {
+                        name: name,
+                        icon: '⭐',
+                        description: 'Custom mood preset',
+                        colors: [...this.currentColors],
+                        brightness: this.currentBrightness,
+                        saturation: this.currentSaturation
+                    };
+                    
+                    alert(`Preset "${name}" saved! (Note: This would be saved to local storage in a real implementation)`);
+                }
+            }
+            
+            shareMood() {
+                const share = new TickleboxShare({
+                    title: 'Mood Color Shader - TickleBox',
+                    text: `I'm enjoying this ${document.getElementById('tickleboxMoodName').textContent} mood on TickleBox! Try it yourself! 🌈`,
+                    url: window.location.href
+                });
+                share.openModal();
+            }
+        }
+        
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            // Load navbar and footer
+            fetch('../components/navbar.html')
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById('tickleboxNavbarContainer').innerHTML = html;
+                    if (typeof initTheme === 'function') initTheme();
+                    if (typeof initSearch === 'function') initSearch();
+                    if (typeof initDropdowns === 'function') initDropdowns();
+                    if (typeof initMobileMenu === 'function') initMobileMenu();
+                });
+            
+            fetch('../components/footer.html')
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById('tickleboxFooterContainer').innerHTML = html;
+                    if (typeof initFooter === 'function') initFooter();
+                });
+            
+            // Initialize mood game
+            window.tickleboxMoodGame = new TickleboxMoodGame();
+        });
+    </script>
+</body>
+</html>

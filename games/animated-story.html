@@ -1,0 +1,846 @@
+<!-- games/animated-story.html -->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Animated Story Scroll - TickleBox</title>
+    <link rel="stylesheet" href="../css/ticklebox-styles.css" />
+    <link rel="stylesheet" href="../css/ticklebox-animations.css" />
+    <style>
+      .ticklebox-story-container {
+        max-width: 800px;
+        margin: 0 auto;
+      }
+
+      .ticklebox-story-scroll {
+        position: relative;
+        min-height: 600px;
+        overflow: hidden;
+      }
+
+      .ticklebox-story-scene {
+        position: absolute;
+        width: 100%;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: var(--ticklebox-space-xl);
+        opacity: 0;
+        transform: translateY(50px);
+        transition: all 1s ease;
+      }
+
+      .ticklebox-story-scene.active {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .ticklebox-story-scene.past {
+        opacity: 0.3;
+        transform: translateY(-50px);
+      }
+
+      .ticklebox-story-icon {
+        font-size: 5rem;
+        margin-bottom: var(--ticklebox-space-lg);
+        animation: ticklebox-float 3s infinite ease-in-out;
+      }
+
+      .ticklebox-story-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: var(--ticklebox-space);
+        text-align: center;
+        color: var(--ticklebox-primary);
+      }
+
+      .ticklebox-story-text {
+        font-size: 1.2rem;
+        line-height: 1.8;
+        text-align: center;
+        max-width: 600px;
+        margin-bottom: var(--ticklebox-space-lg);
+        color: var(--ticklebox-text-primary);
+      }
+
+      .ticklebox-story-choices {
+        display: flex;
+        gap: var(--ticklebox-space);
+        margin: var(--ticklebox-space-lg) 0;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+
+      .ticklebox-story-choice {
+        padding: var(--ticklebox-space) var(--ticklebox-space-lg);
+        background: var(--ticklebox-bg-secondary);
+        border: 2px solid var(--ticklebox-border);
+        border-radius: var(--ticklebox-radius-lg);
+        cursor: pointer;
+        transition: all var(--ticklebox-transition-fast);
+        font-weight: 500;
+        text-align: center;
+        min-width: 150px;
+      }
+
+      .ticklebox-story-choice:hover {
+        border-color: var(--ticklebox-primary);
+        transform: translateY(-2px);
+        box-shadow: var(--ticklebox-shadow-md);
+      }
+
+      .ticklebox-story-choice.selected {
+        background: var(--ticklebox-primary);
+        color: white;
+        border-color: var(--ticklebox-primary);
+      }
+
+      .ticklebox-story-progress {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: var(--ticklebox-space-sm);
+        z-index: 100;
+        background: var(--ticklebox-bg-card);
+        padding: var(--ticklebox-space-sm) var(--ticklebox-space);
+        border-radius: var(--ticklebox-radius-full);
+        box-shadow: var(--ticklebox-shadow-lg);
+      }
+
+      .ticklebox-story-progress-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--ticklebox-border);
+        transition: all var(--ticklebox-transition-fast);
+      }
+
+      .ticklebox-story-progress-dot.active {
+        background: var(--ticklebox-primary);
+        transform: scale(1.2);
+      }
+
+      .ticklebox-story-progress-dot.completed {
+        background: var(--ticklebox-secondary);
+      }
+
+      .ticklebox-story-controls {
+        position: fixed;
+        bottom: 80px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: var(--ticklebox-space);
+        z-index: 100;
+      }
+
+      .ticklebox-story-btn {
+        padding: var(--ticklebox-space-sm) var(--ticklebox-space);
+        background: var(--ticklebox-bg-card);
+        border: 2px solid var(--ticklebox-border);
+        border-radius: var(--ticklebox-radius);
+        cursor: pointer;
+        transition: all var(--ticklebox-transition-fast);
+        display: flex;
+        align-items: center;
+        gap: var(--ticklebox-space-xs);
+        color: var(--ticklebox-text-primary);
+        font-weight: 500;
+      }
+
+      .ticklebox-story-btn:hover {
+        border-color: var(--ticklebox-primary);
+        transform: translateY(-2px);
+      }
+
+      .ticklebox-story-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .ticklebox-story-parallax {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: -1;
+      }
+
+      .ticklebox-story-particle {
+        position: absolute;
+        border-radius: 50%;
+        opacity: 0.3;
+        animation: ticklebox-float 10s infinite ease-in-out;
+      }
+
+      .ticklebox-story-result {
+        background: linear-gradient(
+          135deg,
+          var(--ticklebox-primary-light),
+          var(--ticklebox-secondary-light)
+        );
+        border-radius: var(--ticklebox-radius-lg);
+        padding: var(--ticklebox-space-xl);
+        margin: var(--ticklebox-space-xl) 0;
+        color: white;
+        text-align: center;
+        display: none;
+      }
+
+      .ticklebox-story-result-icon {
+        font-size: 4rem;
+        margin-bottom: var(--ticklebox-space);
+        animation: ticklebox-bounce 2s infinite;
+      }
+
+      .ticklebox-story-result-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: var(--ticklebox-space);
+      }
+
+      .ticklebox-story-result-text {
+        font-size: 1.2rem;
+        line-height: 1.6;
+        margin-bottom: var(--ticklebox-space-lg);
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .ticklebox-story-end-actions {
+        display: flex;
+        gap: var(--ticklebox-space);
+        justify-content: center;
+        margin-top: var(--ticklebox-space-lg);
+      }
+
+      @keyframes ticklebox-typewriter {
+        from {
+          width: 0;
+        }
+        to {
+          width: 100%;
+        }
+      }
+
+      .ticklebox-typewriter {
+        overflow: hidden;
+        white-space: nowrap;
+        animation: ticklebox-typewriter 3s steps(40) 1s 1 normal both;
+      }
+
+      .ticklebox-story-bg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-size: cover;
+        background-position: center;
+        opacity: 0.1;
+        z-index: -1;
+      }
+
+      .ticklebox-story-scroll-indicator {
+        position: absolute;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        animation: ticklebox-bounce 2s infinite;
+        color: var(--ticklebox-primary);
+        font-size: 1.5rem;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- components/navbar.html - FIXED VERSION -->
+
+
+    <div id="tickleboxNavbarContainer"></div>
+
+    <main class="ticklebox-container">
+      <div class="ticklebox-game-header">
+        <div class="ticklebox-game-header-icon">📜</div>
+        <div class="ticklebox-game-header-info">
+          <h1 class="ticklebox-game-title">Animated Story Scroll</h1>
+          <p class="ticklebox-game-subtitle">
+            Scroll through interactive love stories with beautiful effects
+          </p>
+          <div class="ticklebox-game-meta">
+            <span class="ticklebox-game-rating">⭐ 4.9 (300K+ plays)</span>
+            <span class="ticklebox-game-category">📖 Story</span>
+            <span class="ticklebox-game-time">⏱️ 5-10 min</span>
+          </div>
+        </div>
+        <button class="ticklebox-game-share" id="tickleboxStoryShare">
+          <svg viewBox="0 0 24 24" width="20" height="20">
+            <path
+              fill="currentColor"
+              d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"
+            />
+          </svg>
+          Share
+        </button>
+      </div>
+
+      <div class="ticklebox-game-content">
+        <div class="ticklebox-story-container">
+          <div class="ticklebox-story-selection">
+            <h2 class="ticklebox-section-title">Choose Your Story</h2>
+            <p class="ticklebox-section-subtitle">
+              Select a romantic story to begin your journey
+            </p>
+
+            <div class="ticklebox-story-choices" id="tickleboxStorySelection">
+              <div class="ticklebox-story-choice" data-story="starry-night">
+                <div style="font-size: 2rem; margin-bottom: 0.5rem">✨</div>
+                Starry Night
+              </div>
+              <div class="ticklebox-story-choice" data-story="coffee-shop">
+                <div style="font-size: 2rem; margin-bottom: 0.5rem">☕</div>
+                Coffee Shop Encounter
+              </div>
+              <div class="ticklebox-story-choice" data-story="beach-sunset">
+                <div style="font-size: 2rem; margin-bottom: 0.5rem">🌅</div>
+                Beach Sunset
+              </div>
+              <div class="ticklebox-story-choice" data-story="moonlight-dance">
+                <div style="font-size: 2rem; margin-bottom: 0.5rem">💃</div>
+                Moonlight Dance
+              </div>
+            </div>
+          </div>
+
+          <div class="ticklebox-story-scroll" id="tickleboxStoryScroll">
+            <!-- Story scenes will be loaded here -->
+          </div>
+
+          <div class="ticklebox-story-controls">
+            <button
+              class="ticklebox-story-btn"
+              id="tickleboxStoryPrev"
+              disabled
+            >
+              <svg viewBox="0 0 24 24" width="16" height="16">
+                <path
+                  fill="currentColor"
+                  d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"
+                />
+              </svg>
+              Previous
+            </button>
+            <button class="ticklebox-story-btn" id="tickleboxStoryNext">
+              Next
+              <svg viewBox="0 0 24 24" width="16" height="16">
+                <path
+                  fill="currentColor"
+                  d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"
+                />
+              </svg>
+            </button>
+          </div>
+
+          <div class="ticklebox-story-progress" id="tickleboxStoryProgress">
+            <!-- Progress dots will be loaded here -->
+          </div>
+
+          <div class="ticklebox-story-result" id="tickleboxStoryResult">
+            <!-- Story result will be shown here -->
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- components/footer.html - FIXED VERSION -->
+
+    <div id="tickleboxFooterContainer"></div>
+
+    <script src="../js/ticklebox-main.js"></script>
+    <script>
+      // Story data
+      const TICKLEBOX_STORIES = {
+        "starry-night": {
+          title: "Starry Night Romance",
+          icon: "✨",
+          scenes: [
+            {
+              icon: "🌌",
+              title: "Under the Stars",
+              text: "You find yourself on a hilltop, watching the stars twinkle in the night sky. The air is cool and fresh, filled with the scent of night flowers.",
+              choices: [
+                { text: "Make a wish on a shooting star", next: 1 },
+                { text: "Start a conversation about constellations", next: 2 },
+              ],
+            },
+            {
+              icon: "🌠",
+              title: "Shooting Star",
+              text: "As you make your wish, you notice someone else watching the same shooting star. Your eyes meet in the moonlight.",
+              choices: [
+                { text: "Smile and wave", next: 3 },
+                { text: "Walk closer to say hello", next: 4 },
+              ],
+            },
+            {
+              icon: "⭐",
+              title: "Constellation Connection",
+              text: "You point out Orion's belt and share stories about the myths behind the constellations. The other person seems fascinated.",
+              choices: [
+                { text: "Share more constellation stories", next: 5 },
+                { text: "Ask about their favorite star", next: 6 },
+              ],
+            },
+            // More scenes would continue...
+          ],
+        },
+        "coffee-shop": {
+          title: "Coffee Shop Encounter",
+          icon: "☕",
+          scenes: [
+            {
+              icon: "🏪",
+              title: "The Busy Cafe",
+              text: "You're waiting in line at your favorite coffee shop. The smell of fresh coffee fills the air, and soft jazz plays in the background.",
+              choices: [
+                { text: "Order your usual drink", next: 1 },
+                { text: "Try something new from the menu", next: 2 },
+              ],
+            },
+            {
+              icon: "💝",
+              title: "A Sweet Surprise",
+              text: "The barista accidentally makes two of your drink. Someone else ordered the same thing at the same time!",
+              choices: [
+                { text: "Offer to share the extra drink", next: 3 },
+                { text: "Let them have the extra drink", next: 4 },
+              ],
+            },
+          ],
+        },
+      };
+
+      const TICKLEBOX_STORY_ENDINGS = [
+        {
+          icon: "💖",
+          title: "A Beautiful Beginning",
+          text: "Your paths have crossed under the most magical circumstances. Sometimes, the best love stories begin with the simplest moments. Keep your heart open for what comes next!",
+        },
+        {
+          icon: "🌟",
+          title: "Stars Aligned",
+          text: "The universe brought you together for a reason. Remember this moment whenever you look at the stars. Your story is just beginning!",
+        },
+        {
+          icon: "☕",
+          title: "Perfect Blend",
+          text: "Like the perfect cup of coffee, some connections are meant to be savored. You never know when a simple coffee run might change everything!",
+        },
+      ];
+
+      class TickleboxStoryGame {
+        constructor() {
+          this.currentStory = null;
+          this.currentScene = 0;
+          this.sceneHistory = [];
+          this.userChoices = [];
+          this.init();
+        }
+
+        init() {
+          this.setupEventListeners();
+          this.loadStorySelection();
+        }
+
+        setupEventListeners() {
+          // Story selection
+          document
+            .querySelectorAll(".ticklebox-story-choice[data-story]")
+            .forEach((choice) => {
+              choice.addEventListener("click", () => {
+                const storyId = choice.getAttribute("data-story");
+                this.selectStory(storyId);
+              });
+            });
+
+          // Navigation controls
+          document
+            .getElementById("tickleboxStoryPrev")
+            .addEventListener("click", () => {
+              this.prevScene();
+            });
+
+          document
+            .getElementById("tickleboxStoryNext")
+            .addEventListener("click", () => {
+              this.nextScene();
+            });
+
+          // Share button
+          document
+            .getElementById("tickleboxStoryShare")
+            .addEventListener("click", () => {
+              this.shareStory();
+            });
+
+          // Scroll detection
+          let isScrolling;
+          window.addEventListener("scroll", () => {
+            clearTimeout(isScrolling);
+            isScrolling = setTimeout(() => {
+              this.handleScroll();
+            }, 100);
+          });
+        }
+
+        loadStorySelection() {
+          // Already implemented in HTML
+        }
+
+        selectStory(storyId) {
+          this.currentStory = TICKLEBOX_STORIES[storyId];
+          if (!this.currentStory) return;
+
+          this.currentScene = 0;
+          this.sceneHistory = [0];
+          this.userChoices = [];
+
+          // Update UI
+          document.querySelectorAll(".ticklebox-story-choice").forEach((c) => {
+            c.classList.remove("selected");
+          });
+          document
+            .querySelector(`.ticklebox-story-choice[data-story="${storyId}"]`)
+            .classList.add("selected");
+
+          // Hide selection, show story
+          document.querySelector(".ticklebox-story-selection").style.display =
+            "none";
+          document.getElementById("tickleboxStoryScroll").style.display =
+            "block";
+          document.querySelector(".ticklebox-story-controls").style.display =
+            "flex";
+          document.getElementById("tickleboxStoryProgress").style.display =
+            "flex";
+          document.getElementById("tickleboxStoryResult").style.display =
+            "none";
+
+          // Load first scene
+          this.loadScene(0);
+          this.createParticles();
+
+          // Scroll to top
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+
+        loadScene(sceneIndex) {
+          const scene = this.currentStory.scenes[sceneIndex];
+          if (!scene) {
+            this.showEnding();
+            return;
+          }
+
+          const scrollContainer = document.getElementById(
+            "tickleboxStoryScroll",
+          );
+          scrollContainer.innerHTML = "";
+
+          // Create scene
+          const sceneDiv = document.createElement("div");
+          sceneDiv.className = "ticklebox-story-scene active";
+          sceneDiv.id = `scene-${sceneIndex}`;
+
+          // Background
+          const bgDiv = document.createElement("div");
+          bgDiv.className = "ticklebox-story-bg";
+          bgDiv.style.background = this.getSceneBackground(sceneIndex);
+          sceneDiv.appendChild(bgDiv);
+
+          // Content
+          sceneDiv.innerHTML += `
+                    <div class="ticklebox-story-icon">${scene.icon}</div>
+                    <h2 class="ticklebox-story-title">${scene.title}</h2>
+                    <div class="ticklebox-story-text">${scene.text}</div>
+                `;
+
+          // Choices
+          if (scene.choices && scene.choices.length > 0) {
+            const choicesDiv = document.createElement("div");
+            choicesDiv.className = "ticklebox-story-choices";
+
+            scene.choices.forEach((choice, index) => {
+              const choiceDiv = document.createElement("div");
+              choiceDiv.className = "ticklebox-story-choice";
+              choiceDiv.textContent = choice.text;
+              choiceDiv.addEventListener("click", () => {
+                this.makeChoice(sceneIndex, index);
+              });
+              choicesDiv.appendChild(choiceDiv);
+            });
+
+            sceneDiv.appendChild(choicesDiv);
+          }
+
+          scrollContainer.appendChild(sceneDiv);
+
+          // Create parallax elements
+          this.createParallaxElements(sceneDiv);
+
+          // Update progress
+          this.updateProgress();
+
+          // Update navigation buttons
+          this.updateNavigation();
+
+          // Scroll to scene
+          setTimeout(() => {
+            sceneDiv.scrollIntoView({ behavior: "smooth" });
+          }, 500);
+        }
+
+        getSceneBackground(sceneIndex) {
+          const gradients = [
+            "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+            "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
+            "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)",
+            "linear-gradient(135deg, #fa709a 0%, #fee140 100%)",
+          ];
+          return gradients[sceneIndex % gradients.length];
+        }
+
+        createParallaxElements(container) {
+          for (let i = 0; i < 20; i++) {
+            const particle = document.createElement("div");
+            particle.className = "ticklebox-story-particle";
+            particle.style.width = Math.random() * 20 + 5 + "px";
+            particle.style.height = particle.style.width;
+            particle.style.left = Math.random() * 100 + "%";
+            particle.style.top = Math.random() * 100 + "%";
+            particle.style.background = `rgba(255, 255, 255, ${Math.random() * 0.3})`;
+            particle.style.animationDelay = Math.random() * 5 + "s";
+            particle.style.animationDuration = Math.random() * 10 + 10 + "s";
+            container.appendChild(particle);
+          }
+        }
+
+        createParticles() {
+          const scrollContainer = document.getElementById(
+            "tickleboxStoryScroll",
+          );
+          for (let i = 0; i < 50; i++) {
+            const particle = document.createElement("div");
+            particle.className = "ticklebox-story-particle";
+            particle.style.width = Math.random() * 30 + 10 + "px";
+            particle.style.height = particle.style.width;
+            particle.style.left = Math.random() * 100 + "%";
+            particle.style.top = Math.random() * 100 + "vh";
+            particle.style.background = `rgba(124, 58, 237, ${Math.random() * 0.2})`;
+            particle.style.animationDelay = Math.random() * 5 + "s";
+            particle.style.animationDuration = Math.random() * 15 + 15 + "s";
+            scrollContainer.appendChild(particle);
+          }
+        }
+
+        makeChoice(sceneIndex, choiceIndex) {
+          const scene = this.currentStory.scenes[sceneIndex];
+          const choice = scene.choices[choiceIndex];
+
+          // Record choice
+          this.userChoices.push({
+            scene: sceneIndex,
+            choice: choiceIndex,
+            text: choice.text,
+          });
+
+          // Move to next scene
+          this.currentScene = choice.next;
+          this.sceneHistory.push(choice.next);
+          this.loadScene(choice.next);
+        }
+
+        prevScene() {
+          if (this.sceneHistory.length > 1) {
+            this.sceneHistory.pop(); // Remove current
+            this.currentScene = this.sceneHistory[this.sceneHistory.length - 1];
+            this.userChoices.pop(); // Remove last choice
+            this.loadScene(this.currentScene);
+          }
+        }
+
+        nextScene() {
+          const scene = this.currentStory.scenes[this.currentScene];
+          if (scene.choices && scene.choices.length > 0) {
+            // If there are choices, auto-select first one
+            this.makeChoice(this.currentScene, 0);
+          } else {
+            // Move to next scene
+            this.currentScene++;
+            this.sceneHistory.push(this.currentScene);
+            this.loadScene(this.currentScene);
+          }
+        }
+
+        updateProgress() {
+          const progressDiv = document.getElementById("tickleboxStoryProgress");
+          const totalScenes = this.currentStory.scenes.length;
+
+          progressDiv.innerHTML = "";
+
+          for (let i = 0; i < totalScenes; i++) {
+            const dot = document.createElement("div");
+            dot.className = "ticklebox-story-progress-dot";
+
+            if (i === this.currentScene) {
+              dot.classList.add("active");
+            } else if (i < this.currentScene) {
+              dot.classList.add("completed");
+            }
+
+            dot.addEventListener("click", () => {
+              if (i <= this.currentScene) {
+                this.currentScene = i;
+                this.loadScene(i);
+              }
+            });
+
+            progressDiv.appendChild(dot);
+          }
+        }
+
+        updateNavigation() {
+          const prevBtn = document.getElementById("tickleboxStoryPrev");
+          const nextBtn = document.getElementById("tickleboxStoryNext");
+
+          // Previous button
+          prevBtn.disabled = this.currentScene === 0;
+
+          // Next button text
+          const scene = this.currentStory.scenes[this.currentScene];
+          if (scene.choices && scene.choices.length > 0) {
+            nextBtn.innerHTML =
+              'Choose for me <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>';
+          } else {
+            nextBtn.innerHTML =
+              'Next <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>';
+          }
+        }
+
+        handleScroll() {
+          const scenes = document.querySelectorAll(".ticklebox-story-scene");
+          const scrollPosition = window.scrollY + window.innerHeight / 2;
+
+          scenes.forEach((scene, index) => {
+            const rect = scene.getBoundingClientRect();
+            const sceneTop = rect.top + window.scrollY;
+            const sceneBottom = sceneTop + rect.height;
+
+            scene.classList.remove("active", "past");
+
+            if (scrollPosition >= sceneTop && scrollPosition < sceneBottom) {
+              scene.classList.add("active");
+              // Update current scene based on scroll
+              if (index !== this.currentScene && index <= this.currentScene) {
+                this.currentScene = index;
+                this.updateProgress();
+                this.updateNavigation();
+              }
+            } else if (scrollPosition >= sceneBottom) {
+              scene.classList.add("past");
+            }
+          });
+        }
+
+        showEnding() {
+          // Hide story content
+          document.getElementById("tickleboxStoryScroll").style.display =
+            "none";
+          document.querySelector(".ticklebox-story-controls").style.display =
+            "none";
+          document.getElementById("tickleboxStoryProgress").style.display =
+            "none";
+
+          // Show result
+          const resultDiv = document.getElementById("tickleboxStoryResult");
+          const randomEnding =
+            TICKLEBOX_STORY_ENDINGS[
+              Math.floor(Math.random() * TICKLEBOX_STORY_ENDINGS.length)
+            ];
+
+          resultDiv.style.display = "block";
+          resultDiv.innerHTML = `
+                    <div class="ticklebox-story-result-icon">${randomEnding.icon}</div>
+                    <h2 class="ticklebox-story-result-title">${randomEnding.title}</h2>
+                    <div class="ticklebox-story-result-text">${randomEnding.text}</div>
+                    
+                    <div class="ticklebox-story-end-actions">
+                        <button class="ticklebox-btn-primary" id="tickleboxPlayAgain">
+                            🔄 Play Another Story
+                        </button>
+                        <button class="ticklebox-btn-secondary" id="tickleboxShareEnding">
+                            📤 Share This Story
+                        </button>
+                    </div>
+                `;
+
+          // Add event listeners
+          document
+            .getElementById("tickleboxPlayAgain")
+            .addEventListener("click", () => {
+              location.reload();
+            });
+
+          document
+            .getElementById("tickleboxShareEnding")
+            .addEventListener("click", () => {
+              this.shareStory();
+            });
+
+          // Scroll to result
+          resultDiv.scrollIntoView({ behavior: "smooth" });
+        }
+
+        shareStory() {
+          const share = new TickleboxShare({
+            title: "Animated Story Scroll - TickleBox",
+            text: `I just experienced an amazing interactive story on TickleBox! Read it yourself and see where the story takes you! 📖`,
+            url: window.location.href,
+          });
+          share.openModal();
+        }
+      }
+
+      // Initialize when page loads
+      document.addEventListener("DOMContentLoaded", () => {
+        // Load navbar and footer
+        fetch("../components/navbar.html")
+          .then((response) => response.text())
+          .then((html) => {
+            document.getElementById("tickleboxNavbarContainer").innerHTML =
+              html;
+            if (typeof initTheme === "function") initTheme();
+            if (typeof initSearch === "function") initSearch();
+            if (typeof initDropdowns === "function") initDropdowns();
+            if (typeof initMobileMenu === "function") initMobileMenu();
+          });
+
+        fetch("../components/footer.html")
+          .then((response) => response.text())
+          .then((html) => {
+            document.getElementById("tickleboxFooterContainer").innerHTML =
+              html;
+            if (typeof initFooter === "function") initFooter();
+          });
+
+        // Initialize story game
+        window.tickleboxStoryGame = new TickleboxStoryGame();
+      });
+    </script>
+  </body>
+</html>

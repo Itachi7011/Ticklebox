@@ -1,0 +1,1192 @@
+<!-- games/pixel-art.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pixel Art / Drawing Pad - TickleBox</title>
+    <link rel="stylesheet" href="../css/ticklebox-styles.css">
+    <link rel="stylesheet" href="../css/ticklebox-animations.css">
+    <style>
+        .ticklebox-pixel-container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        .ticklebox-pixel-editor {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: var(--ticklebox-space);
+            margin: var(--ticklebox-space-lg) 0;
+        }
+        
+        @media (max-width: 768px) {
+            .ticklebox-pixel-editor {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .ticklebox-pixel-canvas-container {
+            background: var(--ticklebox-bg-secondary);
+            border-radius: var(--ticklebox-radius-lg);
+            padding: var(--ticklebox-space);
+            box-shadow: var(--ticklebox-shadow);
+        }
+        
+        .ticklebox-pixel-tools {
+            background: var(--ticklebox-bg-card);
+            border-radius: var(--ticklebox-radius-lg);
+            padding: var(--ticklebox-space);
+            box-shadow: var(--ticklebox-shadow);
+        }
+        
+        .ticklebox-pixel-canvas {
+            background: white;
+            border: 2px solid var(--ticklebox-border);
+            border-radius: var(--ticklebox-radius);
+            cursor: crosshair;
+            touch-action: none;
+            image-rendering: pixelated;
+            display: block;
+            margin: 0 auto;
+        }
+        
+        .ticklebox-pixel-tool-group {
+            margin-bottom: var(--ticklebox-space-lg);
+        }
+        
+        .ticklebox-pixel-tool-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--ticklebox-text-secondary);
+            margin-bottom: var(--ticklebox-space-sm);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .ticklebox-pixel-colors {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: var(--ticklebox-space-xs);
+        }
+        
+        .ticklebox-pixel-color {
+            width: 32px;
+            height: 32px;
+            border-radius: var(--ticklebox-radius);
+            border: 2px solid var(--ticklebox-border);
+            cursor: pointer;
+            transition: transform var(--ticklebox-transition-fast);
+        }
+        
+        .ticklebox-pixel-color:hover {
+            transform: scale(1.1);
+        }
+        
+        .ticklebox-pixel-color.active {
+            border-color: var(--ticklebox-primary);
+            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.2);
+        }
+        
+        .ticklebox-pixel-tools-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--ticklebox-space-xs);
+        }
+        
+        .ticklebox-pixel-tool {
+            background: var(--ticklebox-bg-secondary);
+            border: 2px solid var(--ticklebox-border);
+            border-radius: var(--ticklebox-radius);
+            padding: var(--ticklebox-space-sm);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: var(--ticklebox-space-xs);
+            cursor: pointer;
+            transition: all var(--ticklebox-transition-fast);
+        }
+        
+        .ticklebox-pixel-tool:hover {
+            border-color: var(--ticklebox-primary);
+            background: var(--ticklebox-bg-tertiary);
+        }
+        
+        .ticklebox-pixel-tool.active {
+            border-color: var(--ticklebox-primary);
+            background: var(--ticklebox-primary);
+            color: white;
+        }
+        
+        .ticklebox-pixel-tool-icon {
+            font-size: 1.5rem;
+        }
+        
+        .ticklebox-pixel-tool-label {
+            font-size: 0.75rem;
+        }
+        
+        .ticklebox-pixel-slider-container {
+            margin: var(--ticklebox-space) 0;
+        }
+        
+        .ticklebox-pixel-slider {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: var(--ticklebox-bg-tertiary);
+            outline: none;
+            -webkit-appearance: none;
+        }
+        
+        .ticklebox-pixel-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--ticklebox-primary);
+            cursor: pointer;
+            border: 2px solid white;
+            box-shadow: var(--ticklebox-shadow);
+        }
+        
+        .ticklebox-pixel-slider-value {
+            text-align: center;
+            font-size: 0.875rem;
+            color: var(--ticklebox-text-secondary);
+            margin-top: var(--ticklebox-space-xs);
+        }
+        
+        .ticklebox-pixel-brush-sizes {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: var(--ticklebox-space-xs);
+        }
+        
+        .ticklebox-pixel-brush-size {
+            width: 100%;
+            aspect-ratio: 1;
+            border-radius: 50%;
+            background: var(--ticklebox-text-primary);
+            border: 2px solid var(--ticklebox-border);
+            cursor: pointer;
+            transition: all var(--ticklebox-transition-fast);
+        }
+        
+        .ticklebox-pixel-brush-size:hover {
+            transform: scale(1.1);
+        }
+        
+        .ticklebox-pixel-brush-size.active {
+            border-color: var(--ticklebox-primary);
+            background: var(--ticklebox-primary);
+        }
+        
+        .ticklebox-pixel-actions {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--ticklebox-space);
+            margin-top: var(--ticklebox-space-lg);
+        }
+        
+        .ticklebox-pixel-btn {
+            padding: var(--ticklebox-space-sm) var(--ticklebox-space);
+            border: none;
+            border-radius: var(--ticklebox-radius);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--ticklebox-transition-fast);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--ticklebox-space-xs);
+        }
+        
+        .ticklebox-pixel-btn-primary {
+            background: var(--ticklebox-primary);
+            color: white;
+        }
+        
+        .ticklebox-pixel-btn-primary:hover {
+            background: var(--ticklebox-primary-dark);
+            transform: translateY(-2px);
+        }
+        
+        .ticklebox-pixel-btn-secondary {
+            background: var(--ticklebox-bg-secondary);
+            color: var(--ticklebox-text-primary);
+            border: 2px solid var(--ticklebox-border);
+        }
+        
+        .ticklebox-pixel-btn-secondary:hover {
+            border-color: var(--ticklebox-primary);
+            transform: translateY(-2px);
+        }
+        
+        .ticklebox-pixel-preview {
+            background: var(--ticklebox-bg-secondary);
+            border-radius: var(--ticklebox-radius);
+            padding: var(--ticklebox-space);
+            text-align: center;
+            margin: var(--ticklebox-space) 0;
+            min-height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--ticklebox-text-tertiary);
+        }
+        
+        .ticklebox-pixel-preview-img {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: var(--ticklebox-radius);
+            box-shadow: var(--ticklebox-shadow);
+        }
+        
+        .ticklebox-pixel-file-input {
+            display: none;
+        }
+        
+        .ticklebox-pixel-file-label {
+            display: block;
+            padding: var(--ticklebox-space-sm);
+            background: var(--ticklebox-bg-secondary);
+            border: 2px dashed var(--ticklebox-border);
+            border-radius: var(--ticklebox-radius);
+            text-align: center;
+            cursor: pointer;
+            transition: all var(--ticklebox-transition-fast);
+        }
+        
+        .ticklebox-pixel-file-label:hover {
+            border-color: var(--ticklebox-primary);
+            background: var(--ticklebox-bg-tertiary);
+        }
+        
+        .ticklebox-pixel-history {
+            display: flex;
+            gap: var(--ticklebox-space-xs);
+            margin: var(--ticklebox-space) 0;
+            overflow-x: auto;
+            padding: var(--ticklebox-space-sm) 0;
+        }
+        
+        .ticklebox-pixel-history-item {
+            flex-shrink: 0;
+            width: 60px;
+            height: 60px;
+            border-radius: var(--ticklebox-radius);
+            border: 2px solid var(--ticklebox-border);
+            background: var(--ticklebox-bg-tertiary);
+            cursor: pointer;
+            transition: all var(--ticklebox-transition-fast);
+        }
+        
+        .ticklebox-pixel-history-item:hover {
+            border-color: var(--ticklebox-primary);
+            transform: scale(1.05);
+        }
+        
+        .ticklebox-pixel-grid-toggle {
+            display: flex;
+            align-items: center;
+            gap: var(--ticklebox-space-sm);
+            margin: var(--ticklebox-space) 0;
+        }
+        
+        .ticklebox-pixel-toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+        
+        .ticklebox-pixel-toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--ticklebox-border);
+            transition: .4s;
+            border-radius: 24px;
+        }
+        
+        .ticklebox-pixel-toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        .ticklebox-pixel-toggle-input:checked + .ticklebox-pixel-toggle-slider {
+            background-color: var(--ticklebox-primary);
+        }
+        
+        .ticklebox-pixel-toggle-input:checked + .ticklebox-pixel-toggle-slider:before {
+            transform: translateX(26px);
+        }
+        
+        .ticklebox-pixel-toggle-input {
+            display: none;
+        }
+        
+        .ticklebox-pixel-canvas-wrapper {
+            position: relative;
+            overflow: auto;
+        }
+    </style>
+</head>
+<body>
+   <!-- components/navbar.html - FIXED VERSION -->
+
+
+    <div id="tickleboxNavbarContainer"></div>
+
+    <main class="ticklebox-container">
+        <div class="ticklebox-game-header">
+            <div class="ticklebox-game-header-icon">🎨</div>
+            <div class="ticklebox-game-header-info">
+                <h1 class="ticklebox-game-title">Pixel Art / Drawing Pad</h1>
+                <p class="ticklebox-game-subtitle">Create and share collaborative doodles with friends</p>
+                <div class="ticklebox-game-meta">
+                    <span class="ticklebox-game-rating">⭐ 4.7 (2M+ plays)</span>
+                    <span class="ticklebox-game-category">🎨 Creative</span>
+                    <span class="ticklebox-game-time">⏱️ Unlimited</span>
+                </div>
+            </div>
+            <button class="ticklebox-game-share" id="tickleboxPixelShare">
+                <svg viewBox="0 0 24 24" width="20" height="20">
+                    <path fill="currentColor" d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/>
+                </svg>
+                Share
+            </button>
+        </div>
+
+        <div class="ticklebox-game-content">
+            <div class="ticklebox-pixel-container">
+                <div class="ticklebox-pixel-editor">
+                    <div class="ticklebox-pixel-canvas-container">
+                        <div class="ticklebox-pixel-canvas-wrapper">
+                            <canvas id="tickleboxPixelCanvas" class="ticklebox-pixel-canvas" width="600" height="400"></canvas>
+                        </div>
+                        
+                        <div class="ticklebox-pixel-grid-toggle">
+                            <span>Show Grid:</span>
+                            <label class="ticklebox-pixel-toggle-switch">
+                                <input type="checkbox" class="ticklebox-pixel-toggle-input" id="tickleboxGridToggle" checked>
+                                <span class="ticklebox-pixel-toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="ticklebox-pixel-tools">
+                        <div class="ticklebox-pixel-tool-group">
+                            <div class="ticklebox-pixel-tool-title">Colors</div>
+                            <div class="ticklebox-pixel-colors" id="tickleboxColorPalette"></div>
+                            <input type="color" id="tickleboxCustomColor" style="display: none;">
+                            <button class="ticklebox-pixel-btn-secondary" id="tickleboxCustomColorBtn" style="width: 100%; margin-top: var(--ticklebox-space-sm);">
+                                Custom Color
+                            </button>
+                        </div>
+                        
+                        <div class="ticklebox-pixel-tool-group">
+                            <div class="ticklebox-pixel-tool-title">Tools</div>
+                            <div class="ticklebox-pixel-tools-row" id="tickleboxToolsRow"></div>
+                        </div>
+                        
+                        <div class="ticklebox-pixel-tool-group">
+                            <div class="ticklebox-pixel-tool-title">Brush Size</div>
+                            <div class="ticklebox-pixel-brush-sizes" id="tickleboxBrushSizes"></div>
+                            <div class="ticklebox-pixel-slider-container">
+                                <input type="range" min="1" max="50" value="10" class="ticklebox-pixel-slider" id="tickleboxBrushSlider">
+                                <div class="ticklebox-pixel-slider-value">Size: <span id="tickleboxBrushSizeValue">10</span>px</div>
+                            </div>
+                        </div>
+                        
+                        <div class="ticklebox-pixel-tool-group">
+                            <div class="ticklebox-pixel-tool-title">Upload Image</div>
+                            <label class="ticklebox-pixel-file-label" for="tickleboxImageUpload">
+                                📁 Click to upload image
+                            </label>
+                            <input type="file" id="tickleboxImageUpload" class="ticklebox-pixel-file-input" accept="image/*">
+                            
+                            <div class="ticklebox-pixel-preview" id="tickleboxImagePreview">
+                                No image uploaded
+                            </div>
+                        </div>
+                        
+                        <div class="ticklebox-pixel-tool-group">
+                            <div class="ticklebox-pixel-tool-title">Drawing History</div>
+                            <div class="ticklebox-pixel-history" id="tickleboxDrawingHistory"></div>
+                        </div>
+                        
+                        <div class="ticklebox-pixel-actions">
+                            <button class="ticklebox-pixel-btn ticklebox-pixel-btn-secondary" id="tickleboxClearCanvas">
+                                🗑️ Clear
+                            </button>
+                            <button class="ticklebox-pixel-btn ticklebox-pixel-btn-primary" id="tickleboxSaveDrawing">
+                                💾 Save & Share
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- components/footer.html - FIXED VERSION -->
+
+    <div id="tickleboxFooterContainer"></div>
+
+    <!-- Share Modal -->
+    <div class="ticklebox-modal" id="tickleboxPixelShareModal">
+        <div class="ticklebox-modal-content">
+            <div class="ticklebox-modal-header">
+                <div class="ticklebox-modal-title">Share Your Drawing</div>
+                <button class="ticklebox-modal-close">&times;</button>
+            </div>
+            <div class="ticklebox-modal-body">
+                <div class="ticklebox-pixel-preview">
+                    <img id="tickleboxSharePreview" class="ticklebox-pixel-preview-img" alt="Drawing preview">
+                </div>
+                <div class="ticklebox-share-options">
+                    <a href="#" class="ticklebox-share-option" data-platform="facebook">
+                        <svg class="ticklebox-share-icon" viewBox="0 0 24 24">
+                            <path fill="currentColor" d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c5.05-.5 9-4.76 9-9.95z"/>
+                        </svg>
+                        <span class="ticklebox-share-label">Facebook</span>
+                    </a>
+                    <a href="#" class="ticklebox-share-option" data-platform="twitter">
+                        <svg class="ticklebox-share-icon" viewBox="0 0 24 24">
+                            <path fill="currentColor" d="M22.46 6c-.77.35-1.6.58-2.46.69.88-.53 1.56-1.37 1.88-2.38-.83.5-1.75.85-2.72 1.05C18.37 4.5 17.26 4 16 4c-2.35 0-4.27 1.92-4.27 4.29 0 .34.04.67.11.98C8.28 9.09 5.11 7.38 3 4.79c-.37.63-.58 1.37-.58 2.15 0 1.49.75 2.81 1.91 3.56-.71 0-1.37-.2-1.95-.5v.03c0 2.08 1.48 3.82 3.44 4.21a4.22 4.22 0 0 1-1.93.07 4.28 4.28 0 0 0 4 2.98 8.521 8.521 0 0 1-5.33 1.84c-.34 0-.68-.02-1.02-.06C3.44 20.29 5.7 21 8.12 21 16 21 20.33 14.46 20.33 8.79c0-.19 0-.37-.01-.56.84-.6 1.56-1.36 2.14-2.23z"/>
+                        </svg>
+                        <span class="ticklebox-share-label">Twitter</span>
+                    </a>
+                    <a href="#" class="ticklebox-share-option" data-platform="whatsapp">
+                        <svg class="ticklebox-share-icon" viewBox="0 0 24 24">
+                            <path fill="currentColor" d="M16.75 13.96c.25.13.41.2.46.3.06.11.04.61-.21 1.18-.2.56-1.24 1.1-1.7 1.12-.46.02-.47.36-2.96-.73-2.49-1.09-3.99-3.75-4.11-3.92-.12-.17-.96-1.38-.92-2.61.05-1.22.69-1.8.95-2.04.24-.26.51-.29.68-.26h.47c.15 0 .36-.06.55.45l.69 1.87c.06.13.1.28.01.44l-.27.41-.39.42c-.12.12-.26.25-.12.5.12.26.62 1.09 1.32 1.78.91.88 1.71 1.17 1.95 1.3.24.14.39.12.54-.04l.81-.94c.19-.25.35-.19.58-.11l1.67.88M12 2a10 10 0 0 1 10 10 10 10 0 0 1-10 10c-1.97 0-3.8-.57-5.35-1.55L2 22l1.55-4.65A9.969 9.969 0 0 1 2 12 10 10 0 0 1 12 2m0 2a8 8 0 0 0-8 8c0 1.72.54 3.31 1.46 4.61L4.5 19.5l2.89-.96A7.95 7.95 0 0 0 12 20a8 8 0 0 0 8-8 8 8 0 0 0-8-8z"/>
+                        </svg>
+                        <span class="ticklebox-share-label">WhatsApp</span>
+                    </a>
+                    <a href="#" class="ticklebox-share-option" data-platform="copy">
+                        <svg class="ticklebox-share-icon" viewBox="0 0 24 24">
+                            <path fill="currentColor" d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
+                        </svg>
+                        <span class="ticklebox-share-label">Copy Link</span>
+                    </a>
+                </div>
+                <div class="ticklebox-share-link">
+                    <input type="text" class="ticklebox-share-input" id="tickleboxPixelLink" readonly>
+                    <button class="ticklebox-share-copy" id="tickleboxCopyPixelLink">Copy</button>
+                </div>
+                <div class="ticklebox-pixel-actions" style="margin-top: var(--ticklebox-space);">
+                    <button class="ticklebox-pixel-btn ticklebox-pixel-btn-primary" id="tickleboxDownloadImage">
+                        📥 Download Image
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/ticklebox-main.js"></script>
+    <script>
+        // Color palette
+        const TICKLEBOX_COLORS = [
+            '#000000', '#FFFFFF', '#FF3B30', '#FF9500', '#FFCC00',
+            '#4CD964', '#5AC8FA', '#007AFF', '#5856D6', '#FF2D55',
+            '#8B4513', '#FF69B4', '#00CED1', '#32CD32', '#1E90FF',
+            '#FFD700', '#DA70D6', '#F0E68C', '#D2691E', '#4682B4'
+        ];
+        
+        // Tools configuration
+        const TICKLEBOX_TOOLS = [
+            { id: 'brush', icon: '🖌️', label: 'Brush' },
+            { id: 'eraser', icon: '🧽', label: 'Eraser' },
+            { id: 'fill', icon: '🪣', label: 'Fill' },
+            { id: 'line', icon: '📏', label: 'Line' },
+            { id: 'rectangle', icon: '⬜', label: 'Rectangle' },
+            { id: 'circle', icon: '⭕', label: 'Circle' },
+            { id: 'text', icon: '🔤', label: 'Text' },
+            { id: 'picker', icon: '🎯', label: 'Picker' },
+            { id: 'undo', icon: '↩️', label: 'Undo' }
+        ];
+        
+        // Brush sizes
+        const TICKLEBOX_BRUSH_SIZES = [1, 3, 5, 10, 15, 20, 30, 50];
+        
+        class TickleboxPixelArt {
+            constructor() {
+                this.canvas = document.getElementById('tickleboxPixelCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.isDrawing = false;
+                this.currentTool = 'brush';
+                this.currentColor = '#000000';
+                this.brushSize = 10;
+                this.lastX = 0;
+                this.lastY = 0;
+                this.drawingHistory = [];
+                this.historyIndex = -1;
+                this.isGridVisible = true;
+                this.isDrawingShape = false;
+                this.shapeStartX = 0;
+                this.shapeStartY = 0;
+                this.uploadedImage = null;
+                
+                this.init();
+            }
+            
+            init() {
+                this.setupCanvas();
+                this.setupColorPalette();
+                this.setupTools();
+                this.setupBrushSizes();
+                this.setupEventListeners();
+                this.drawGrid();
+            }
+            
+            setupCanvas() {
+                // Set canvas size
+                this.canvas.width = 600;
+                this.canvas.height = 400;
+                
+                // Set initial background
+                this.ctx.fillStyle = '#FFFFFF';
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                // Save initial state
+                this.saveToHistory();
+            }
+            
+            setupColorPalette() {
+                const paletteDiv = document.getElementById('tickleboxColorPalette');
+                TICKLEBOX_COLORS.forEach(color => {
+                    const colorDiv = document.createElement('div');
+                    colorDiv.className = 'ticklebox-pixel-color';
+                    colorDiv.style.backgroundColor = color;
+                    colorDiv.dataset.color = color;
+                    
+                    if (color === this.currentColor) {
+                        colorDiv.classList.add('active');
+                    }
+                    
+                    colorDiv.addEventListener('click', () => {
+                        this.setColor(color);
+                        document.querySelectorAll('.ticklebox-pixel-color').forEach(c => {
+                            c.classList.remove('active');
+                        });
+                        colorDiv.classList.add('active');
+                    });
+                    
+                    paletteDiv.appendChild(colorDiv);
+                });
+                
+                // Custom color button
+                document.getElementById('tickleboxCustomColorBtn').addEventListener('click', () => {
+                    document.getElementById('tickleboxCustomColor').click();
+                });
+                
+                document.getElementById('tickleboxCustomColor').addEventListener('input', (e) => {
+                    this.setColor(e.target.value);
+                });
+            }
+            
+            setupTools() {
+                const toolsRow = document.getElementById('tickleboxToolsRow');
+                TICKLEBOX_TOOLS.forEach(tool => {
+                    const toolDiv = document.createElement('button');
+                    toolDiv.className = 'ticklebox-pixel-tool';
+                    toolDiv.dataset.tool = tool.id;
+                    toolDiv.innerHTML = `
+                        <div class="ticklebox-pixel-tool-icon">${tool.icon}</div>
+                        <div class="ticklebox-pixel-tool-label">${tool.label}</div>
+                    `;
+                    
+                    if (tool.id === this.currentTool) {
+                        toolDiv.classList.add('active');
+                    }
+                    
+                    toolDiv.addEventListener('click', () => {
+                        this.setTool(tool.id);
+                        document.querySelectorAll('.ticklebox-pixel-tool').forEach(t => {
+                            t.classList.remove('active');
+                        });
+                        toolDiv.classList.add('active');
+                    });
+                    
+                    toolsRow.appendChild(toolDiv);
+                });
+            }
+            
+            setupBrushSizes() {
+                const brushSizesDiv = document.getElementById('tickleboxBrushSizes');
+                TICKLEBOX_BRUSH_SIZES.forEach(size => {
+                    const sizeDiv = document.createElement('div');
+                    sizeDiv.className = 'ticklebox-pixel-brush-size';
+                    sizeDiv.dataset.size = size;
+                    sizeDiv.style.width = `${Math.min(size * 2, 40)}px`;
+                    sizeDiv.style.height = `${Math.min(size * 2, 40)}px`;
+                    sizeDiv.style.margin = '0 auto';
+                    
+                    if (size === this.brushSize) {
+                        sizeDiv.classList.add('active');
+                    }
+                    
+                    sizeDiv.addEventListener('click', () => {
+                        this.setBrushSize(size);
+                        document.querySelectorAll('.ticklebox-pixel-brush-size').forEach(s => {
+                            s.classList.remove('active');
+                        });
+                        sizeDiv.classList.add('active');
+                        document.getElementById('tickleboxBrushSlider').value = size;
+                        document.getElementById('tickleboxBrushSizeValue').textContent = size;
+                    });
+                    
+                    brushSizesDiv.appendChild(sizeDiv);
+                });
+                
+                // Brush slider
+                const brushSlider = document.getElementById('tickleboxBrushSlider');
+                brushSlider.addEventListener('input', (e) => {
+                    const size = parseInt(e.target.value);
+                    this.setBrushSize(size);
+                    document.getElementById('tickleboxBrushSizeValue').textContent = size;
+                    
+                    // Update active brush size
+                    document.querySelectorAll('.ticklebox-pixel-brush-size').forEach(s => {
+                        s.classList.remove('active');
+                        if (parseInt(s.dataset.size) === size) {
+                            s.classList.add('active');
+                        }
+                    });
+                });
+            }
+            
+            setupEventListeners() {
+                // Canvas events
+                this.canvas.addEventListener('mousedown', (e) => this.startDrawing(e));
+                this.canvas.addEventListener('mousemove', (e) => this.draw(e));
+                this.canvas.addEventListener('mouseup', () => this.stopDrawing());
+                this.canvas.addEventListener('mouseout', () => this.stopDrawing());
+                
+                // Touch events for mobile
+                this.canvas.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    this.startDrawing(e.touches[0]);
+                });
+                this.canvas.addEventListener('touchmove', (e) => {
+                    e.preventDefault();
+                    this.draw(e.touches[0]);
+                });
+                this.canvas.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    this.stopDrawing();
+                });
+                
+                // Grid toggle
+                document.getElementById('tickleboxGridToggle').addEventListener('change', (e) => {
+                    this.isGridVisible = e.target.checked;
+                    this.redrawCanvas();
+                });
+                
+                // Clear canvas
+                document.getElementById('tickleboxClearCanvas').addEventListener('click', () => {
+                    if (confirm('Are you sure you want to clear the canvas?')) {
+                        this.clearCanvas();
+                    }
+                });
+                
+                // Save drawing
+                document.getElementById('tickleboxSaveDrawing').addEventListener('click', () => {
+                    this.saveDrawing();
+                });
+                
+                // Image upload
+                document.getElementById('tickleboxImageUpload').addEventListener('change', (e) => {
+                    this.loadImage(e.target.files[0]);
+                });
+                
+                // Share button
+                document.getElementById('tickleboxPixelShare').addEventListener('click', () => {
+                    this.openShareModal();
+                });
+                
+                // Download image
+                document.getElementById('tickleboxDownloadImage').addEventListener('click', () => {
+                    this.downloadImage();
+                });
+                
+                // Copy link
+                document.getElementById('tickleboxCopyPixelLink').addEventListener('click', () => {
+                    const input = document.getElementById('tickleboxPixelLink');
+                    input.select();
+                    document.execCommand('copy');
+                    
+                    const btn = document.getElementById('tickleboxCopyPixelLink');
+                    const originalText = btn.textContent;
+                    btn.textContent = 'Copied!';
+                    btn.style.backgroundColor = '#10b981';
+                    
+                    setTimeout(() => {
+                        btn.textContent = originalText;
+                        btn.style.backgroundColor = '';
+                    }, 2000);
+                });
+                
+                // Share options
+                document.querySelectorAll('#tickleboxPixelShareModal .ticklebox-share-option').forEach(option => {
+                    option.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const platform = option.dataset.platform;
+                        this.shareToPlatform(platform);
+                    });
+                });
+                
+                // Modal close
+                document.querySelector('#tickleboxPixelShareModal .ticklebox-modal-close').addEventListener('click', () => {
+                    document.getElementById('tickleboxPixelShareModal').classList.remove('show');
+                });
+            }
+            
+            setColor(color) {
+                this.currentColor = color;
+            }
+            
+            setTool(tool) {
+                this.currentTool = tool;
+                
+                if (tool === 'undo') {
+                    this.undo();
+                    this.setTool('brush'); // Switch back to brush after undo
+                    document.querySelector('.ticklebox-pixel-tool[data-tool="brush"]').click();
+                }
+            }
+            
+            setBrushSize(size) {
+                this.brushSize = size;
+            }
+            
+            startDrawing(e) {
+                this.isDrawing = true;
+                const rect = this.canvas.getBoundingClientRect();
+                this.lastX = e.clientX - rect.left;
+                this.lastY = e.clientY - rect.top;
+                this.shapeStartX = this.lastX;
+                this.shapeStartY = this.lastY;
+                
+                if (this.currentTool === 'fill') {
+                    this.floodFill(this.lastX, this.lastY, this.currentColor);
+                    this.isDrawing = false;
+                    this.saveToHistory();
+                } else if (this.currentTool === 'picker') {
+                    this.pickColor(this.lastX, this.lastY);
+                    this.isDrawing = false;
+                }
+            }
+            
+            draw(e) {
+                if (!this.isDrawing) return;
+                
+                const rect = this.canvas.getBoundingClientRect();
+                const currentX = e.clientX - rect.left;
+                const currentY = e.clientY - rect.top;
+                
+                this.ctx.lineJoin = 'round';
+                this.ctx.lineCap = 'round';
+                
+                switch (this.currentTool) {
+                    case 'brush':
+                        this.drawBrush(currentX, currentY);
+                        break;
+                    case 'eraser':
+                        this.drawEraser(currentX, currentY);
+                        break;
+                    case 'line':
+                        this.drawLine(currentX, currentY);
+                        break;
+                    case 'rectangle':
+                        this.drawRectangle(currentX, currentY);
+                        break;
+                    case 'circle':
+                        this.drawCircle(currentX, currentY);
+                        break;
+                    case 'text':
+                        this.drawText(currentX, currentY);
+                        break;
+                }
+                
+                this.lastX = currentX;
+                this.lastY = currentY;
+            }
+            
+            drawBrush(x, y) {
+                this.ctx.beginPath();
+                this.ctx.moveTo(this.lastX, this.lastY);
+                this.ctx.lineTo(x, y);
+                this.ctx.strokeStyle = this.currentColor;
+                this.ctx.lineWidth = this.brushSize;
+                this.ctx.stroke();
+            }
+            
+            drawEraser(x, y) {
+                this.ctx.beginPath();
+                this.ctx.moveTo(this.lastX, this.lastY);
+                this.ctx.lineTo(x, y);
+                this.ctx.strokeStyle = '#FFFFFF';
+                this.ctx.lineWidth = this.brushSize;
+                this.ctx.stroke();
+            }
+            
+            drawLine(x, y) {
+                // Redraw canvas without current line
+                this.redrawCanvas();
+                
+                // Draw new line
+                this.ctx.beginPath();
+                this.ctx.moveTo(this.shapeStartX, this.shapeStartY);
+                this.ctx.lineTo(x, y);
+                this.ctx.strokeStyle = this.currentColor;
+                this.ctx.lineWidth = this.brushSize;
+                this.ctx.stroke();
+            }
+            
+            drawRectangle(x, y) {
+                // Redraw canvas without current rectangle
+                this.redrawCanvas();
+                
+                // Draw new rectangle
+                this.ctx.strokeStyle = this.currentColor;
+                this.ctx.lineWidth = this.brushSize;
+                const width = x - this.shapeStartX;
+                const height = y - this.shapeStartY;
+                this.ctx.strokeRect(this.shapeStartX, this.shapeStartY, width, height);
+            }
+            
+            drawCircle(x, y) {
+                // Redraw canvas without current circle
+                this.redrawCanvas();
+                
+                // Draw new circle
+                this.ctx.beginPath();
+                const radius = Math.sqrt(
+                    Math.pow(x - this.shapeStartX, 2) + 
+                    Math.pow(y - this.shapeStartY, 2)
+                );
+                this.ctx.arc(this.shapeStartX, this.shapeStartY, radius, 0, Math.PI * 2);
+                this.ctx.strokeStyle = this.currentColor;
+                this.ctx.lineWidth = this.brushSize;
+                this.ctx.stroke();
+            }
+            
+            drawText(x, y) {
+                const text = prompt('Enter text:', 'Hello!');
+                if (text) {
+                    this.ctx.font = `${this.brushSize * 5}px Arial`;
+                    this.ctx.fillStyle = this.currentColor;
+                    this.ctx.fillText(text, x, y);
+                    this.saveToHistory();
+                }
+                this.isDrawing = false;
+            }
+            
+            floodFill(x, y, fillColor) {
+                const imageData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
+                const data = imageData.data;
+                const targetColor = this.getPixelColor(x, y);
+                
+                if (this.colorsEqual(targetColor, this.hexToRgb(fillColor))) {
+                    return; // Same color
+                }
+                
+                const stack = [[Math.round(x), Math.round(y)]];
+                const visited = new Set();
+                
+                while (stack.length > 0) {
+                    const [cx, cy] = stack.pop();
+                    const key = `${cx},${cy}`;
+                    
+                    if (cx < 0 || cx >= this.canvas.width || cy < 0 || cy >= this.canvas.height) {
+                        continue;
+                    }
+                    
+                    if (visited.has(key)) {
+                        continue;
+                    }
+                    
+                    const pixelColor = this.getPixelColor(cx, cy);
+                    if (!this.colorsEqual(pixelColor, targetColor)) {
+                        continue;
+                    }
+                    
+                    // Set pixel color
+                    const index = (cy * this.canvas.width + cx) * 4;
+                    const rgb = this.hexToRgb(fillColor);
+                    data[index] = rgb.r;
+                    data[index + 1] = rgb.g;
+                    data[index + 2] = rgb.b;
+                    data[index + 3] = 255;
+                    
+                    visited.add(key);
+                    
+                    // Add neighbors
+                    stack.push([cx + 1, cy]);
+                    stack.push([cx - 1, cy]);
+                    stack.push([cx, cy + 1]);
+                    stack.push([cx, cy - 1]);
+                }
+                
+                this.ctx.putImageData(imageData, 0, 0);
+                this.drawGrid();
+            }
+            
+            pickColor(x, y) {
+                const color = this.getPixelColor(x, y);
+                this.setColor(this.rgbToHex(color.r, color.g, color.b));
+                
+                // Update active color
+                document.querySelectorAll('.ticklebox-pixel-color').forEach(c => {
+                    c.classList.remove('active');
+                    if (c.style.backgroundColor === this.currentColor || 
+                        c.dataset.color === this.currentColor) {
+                        c.classList.add('active');
+                    }
+                });
+            }
+            
+            getPixelColor(x, y) {
+                const imageData = this.ctx.getImageData(x, y, 1, 1);
+                return {
+                    r: imageData.data[0],
+                    g: imageData.data[1],
+                    b: imageData.data[2],
+                    a: imageData.data[3]
+                };
+            }
+            
+            colorsEqual(c1, c2) {
+                return c1.r === c2.r && c1.g === c2.g && c1.b === c2.b;
+            }
+            
+            hexToRgb(hex) {
+                const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+                return result ? {
+                    r: parseInt(result[1], 16),
+                    g: parseInt(result[2], 16),
+                    b: parseInt(result[3], 16)
+                } : { r: 0, g: 0, b: 0 };
+            }
+            
+            rgbToHex(r, g, b) {
+                return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+            }
+            
+            stopDrawing() {
+                if (this.isDrawing) {
+                    this.isDrawing = false;
+                    this.saveToHistory();
+                }
+            }
+            
+            drawGrid() {
+                if (!this.isGridVisible) return;
+                
+                this.ctx.strokeStyle = 'rgba(0, 0, 0, 0.1)';
+                this.ctx.lineWidth = 1;
+                
+                // Vertical lines
+                for (let x = 0; x <= this.canvas.width; x += 20) {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(x, 0);
+                    this.ctx.lineTo(x, this.canvas.height);
+                    this.ctx.stroke();
+                }
+                
+                // Horizontal lines
+                for (let y = 0; y <= this.canvas.height; y += 20) {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(0, y);
+                    this.ctx.lineTo(this.canvas.width, y);
+                    this.ctx.stroke();
+                }
+            }
+            
+            redrawCanvas() {
+                // Clear canvas
+                this.ctx.fillStyle = '#FFFFFF';
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                // Redraw from history
+                if (this.historyIndex >= 0) {
+                    const image = new Image();
+                    image.src = this.drawingHistory[this.historyIndex];
+                    image.onload = () => {
+                        this.ctx.drawImage(image, 0, 0);
+                        if (this.isGridVisible) {
+                            this.drawGrid();
+                        }
+                    };
+                }
+                
+                // Redraw uploaded image if exists
+                if (this.uploadedImage) {
+                    this.ctx.drawImage(this.uploadedImage, 0, 0, this.canvas.width, this.canvas.height);
+                }
+            }
+            
+            saveToHistory() {
+                // Remove future states if we're not at the end
+                this.drawingHistory = this.drawingHistory.slice(0, this.historyIndex + 1);
+                
+                // Save current state
+                const imageData = this.canvas.toDataURL();
+                this.drawingHistory.push(imageData);
+                this.historyIndex++;
+                
+                // Update history preview
+                this.updateHistoryPreview();
+            }
+            
+            undo() {
+                if (this.historyIndex > 0) {
+                    this.historyIndex--;
+                    this.redrawCanvas();
+                }
+            }
+            
+            updateHistoryPreview() {
+                const historyDiv = document.getElementById('tickleboxDrawingHistory');
+                historyDiv.innerHTML = '';
+                
+                // Show last 5 history items
+                const start = Math.max(0, this.historyIndex - 4);
+                const end = this.historyIndex + 1;
+                
+                for (let i = start; i < end; i++) {
+                    const historyItem = document.createElement('div');
+                    historyItem.className = 'ticklebox-pixel-history-item';
+                    historyItem.style.backgroundImage = `url(${this.drawingHistory[i]})`;
+                    historyItem.style.backgroundSize = 'cover';
+                    historyItem.style.backgroundPosition = 'center';
+                    
+                    historyItem.addEventListener('click', () => {
+                        this.historyIndex = i;
+                        this.redrawCanvas();
+                    });
+                    
+                    historyDiv.appendChild(historyItem);
+                }
+            }
+            
+            clearCanvas() {
+                this.ctx.fillStyle = '#FFFFFF';
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                this.saveToHistory();
+                this.drawGrid();
+            }
+            
+            loadImage(file) {
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    this.uploadedImage = new Image();
+                    this.uploadedImage.onload = () => {
+                        // Draw image on canvas
+                        this.ctx.drawImage(this.uploadedImage, 0, 0, this.canvas.width, this.canvas.height);
+                        this.saveToHistory();
+                        
+                        // Update preview
+                        const previewDiv = document.getElementById('tickleboxImagePreview');
+                        previewDiv.innerHTML = `<img src="${e.target.result}" class="ticklebox-pixel-preview-img" alt="Uploaded image">`;
+                    };
+                    this.uploadedImage.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+            
+            saveDrawing() {
+                this.openShareModal();
+            }
+            
+            openShareModal() {
+                // Generate shareable image
+                const imageData = this.canvas.toDataURL('image/png');
+                
+                // Update preview in modal
+                document.getElementById('tickleboxSharePreview').src = imageData;
+                
+                // Generate share link
+                const shareLink = `${window.location.origin}${window.location.pathname}?drawing=${encodeURIComponent(imageData)}`;
+                document.getElementById('tickleboxPixelLink').value = shareLink;
+                
+                // Show modal
+                document.getElementById('tickleboxPixelShareModal').classList.add('show');
+            }
+            
+            downloadImage() {
+                const link = document.createElement('a');
+                link.download = `ticklebox-drawing-${Date.now()}.png`;
+                link.href = this.canvas.toDataURL('image/png');
+                link.click();
+            }
+            
+            shareToPlatform(platform) {
+                const imageData = this.canvas.toDataURL('image/png');
+                const shareUrl = encodeURIComponent(window.location.href);
+                const shareText = encodeURIComponent('Check out my drawing on TickleBox!');
+                
+                let url = '';
+                
+                switch(platform) {
+                    case 'facebook':
+                        url = `https://www.facebook.com/sharer/sharer.php?u=${shareUrl}`;
+                        break;
+                    case 'twitter':
+                        url = `https://twitter.com/intent/tweet?url=${shareUrl}&text=${shareText}`;
+                        break;
+                    case 'whatsapp':
+                        url = `https://wa.me/?text=${shareText}%20${shareUrl}`;
+                        break;
+                    case 'copy':
+                        navigator.clipboard.writeText(window.location.href);
+                        return;
+                }
+                
+                if (url) {
+                    window.open(url, '_blank', 'width=600,height=400');
+                }
+            }
+        }
+        
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            // Load navbar and footer
+            fetch('../components/navbar.html')
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById('tickleboxNavbarContainer').innerHTML = html;
+                    initTheme();
+                    initSearch();
+                    initDropdowns();
+                    initMobileMenu();
+                });
+            
+            fetch('../components/footer.html')
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById('tickleboxFooterContainer').innerHTML = html;
+                    initFooter();
+                });
+            
+            // Initialize pixel art
+            window.tickleboxPixelArt = new TickleboxPixelArt();
+        });
+    </script>
+</body>
+</html>

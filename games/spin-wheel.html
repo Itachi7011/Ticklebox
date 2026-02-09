@@ -1,0 +1,1014 @@
+<!-- games/spin-wheel.html -->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Spin the Wheel - TickleBox</title>
+    <link rel="stylesheet" href="../css/ticklebox-styles.css" />
+    <link rel="stylesheet" href="../css/ticklebox-animations.css" />
+    <style>
+      .ticklebox-wheel-container {
+        max-width: 1000px;
+        margin: 0 auto;
+      }
+
+      .ticklebox-wheel-editor {
+        display: grid;
+        grid-template-columns: 1fr 300px;
+        gap: var(--ticklebox-space);
+        margin: var(--ticklebox-space-lg) 0;
+      }
+
+      @media (max-width: 768px) {
+        .ticklebox-wheel-editor {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .ticklebox-wheel-visual {
+        background: var(--ticklebox-bg-card);
+        border-radius: var(--ticklebox-radius-lg);
+        padding: var(--ticklebox-space);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 500px;
+        position: relative;
+      }
+
+      .ticklebox-wheel-canvas-container {
+        position: relative;
+        width: 400px;
+        height: 400px;
+      }
+
+      .ticklebox-wheel-canvas {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        box-shadow: var(--ticklebox-shadow-xl);
+      }
+
+      .ticklebox-wheel-pointer {
+        position: absolute;
+        top: -40px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 40px;
+        height: 60px;
+        background: var(--ticklebox-accent);
+        clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+        z-index: 10;
+      }
+
+      .ticklebox-wheel-center {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 60px;
+        height: 60px;
+        background: white;
+        border-radius: 50%;
+        border: 4px solid var(--ticklebox-primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        font-weight: bold;
+        z-index: 5;
+        cursor: pointer;
+        transition: transform var(--ticklebox-transition);
+      }
+
+      .ticklebox-wheel-center:hover {
+        transform: translate(-50%, -50%) scale(1.1);
+      }
+
+      .ticklebox-wheel-controls {
+        background: var(--ticklebox-bg-card);
+        border-radius: var(--ticklebox-radius-lg);
+        padding: var(--ticklebox-space);
+        box-shadow: var(--ticklebox-shadow);
+      }
+
+      .ticklebox-wheel-section {
+        margin-bottom: var(--ticklebox-space-lg);
+      }
+
+      .ticklebox-wheel-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--ticklebox-text-secondary);
+        margin-bottom: var(--ticklebox-space-sm);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      .ticklebox-wheel-items {
+        display: flex;
+        flex-direction: column;
+        gap: var(--ticklebox-space-sm);
+        max-height: 200px;
+        overflow-y: auto;
+        padding: var(--ticklebox-space-sm);
+        background: var(--ticklebox-bg-secondary);
+        border-radius: var(--ticklebox-radius);
+      }
+
+      .ticklebox-wheel-item {
+        display: flex;
+        align-items: center;
+        gap: var(--ticklebox-space-sm);
+        padding: var(--ticklebox-space-sm);
+        background: var(--ticklebox-bg-tertiary);
+        border-radius: var(--ticklebox-radius);
+      }
+
+      .ticklebox-wheel-item-color {
+        width: 20px;
+        height: 20px;
+        border-radius: 4px;
+        border: 2px solid var(--ticklebox-border);
+      }
+
+      .ticklebox-wheel-item-text {
+        flex: 1;
+        font-size: 0.875rem;
+      }
+
+      .ticklebox-wheel-item-remove {
+        background: none;
+        border: none;
+        color: var(--ticklebox-text-tertiary);
+        cursor: pointer;
+        padding: 2px;
+        border-radius: var(--ticklebox-radius);
+      }
+
+      .ticklebox-wheel-item-remove:hover {
+        color: var(--ticklebox-primary);
+        background: var(--ticklebox-bg-secondary);
+      }
+
+      .ticklebox-wheel-input-group {
+        display: flex;
+        gap: var(--ticklebox-space-sm);
+        margin-bottom: var(--ticklebox-space);
+      }
+
+      .ticklebox-wheel-input {
+        flex: 1;
+        padding: var(--ticklebox-space-sm);
+        border: 2px solid var(--ticklebox-border);
+        border-radius: var(--ticklebox-radius);
+        background: var(--ticklebox-bg-secondary);
+        color: var(--ticklebox-text-primary);
+        font-size: 0.875rem;
+      }
+
+      .ticklebox-wheel-input:focus {
+        outline: none;
+        border-color: var(--ticklebox-primary);
+      }
+
+      .ticklebox-wheel-color-input {
+        width: 50px;
+        height: 40px;
+        padding: 2px;
+        border: 2px solid var(--ticklebox-border);
+        border-radius: var(--ticklebox-radius);
+        cursor: pointer;
+      }
+
+      .ticklebox-wheel-btn {
+        padding: var(--ticklebox-space-sm) var(--ticklebox-space);
+        border: none;
+        border-radius: var(--ticklebox-radius);
+        font-weight: 600;
+        cursor: pointer;
+        transition: all var(--ticklebox-transition-fast);
+      }
+
+      .ticklebox-wheel-btn-primary {
+        background: var(--ticklebox-primary);
+        color: white;
+      }
+
+      .ticklebox-wheel-btn-primary:hover {
+        background: var(--ticklebox-primary-dark);
+        transform: translateY(-2px);
+      }
+
+      .ticklebox-wheel-btn-secondary {
+        background: var(--ticklebox-bg-secondary);
+        color: var(--ticklebox-text-primary);
+        border: 2px solid var(--ticklebox-border);
+      }
+
+      .ticklebox-wheel-btn-secondary:hover {
+        border-color: var(--ticklebox-primary);
+        transform: translateY(-2px);
+      }
+
+      .ticklebox-wheel-presets {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--ticklebox-space-sm);
+      }
+
+      .ticklebox-wheel-preset {
+        padding: var(--ticklebox-space-sm);
+        background: var(--ticklebox-bg-secondary);
+        border: 2px solid var(--ticklebox-border);
+        border-radius: var(--ticklebox-radius);
+        text-align: center;
+        cursor: pointer;
+        transition: all var(--ticklebox-transition-fast);
+      }
+
+      .ticklebox-wheel-preset:hover {
+        border-color: var(--ticklebox-primary);
+        transform: translateY(-2px);
+      }
+
+      .ticklebox-wheel-preset-icon {
+        font-size: 1.5rem;
+        margin-bottom: var(--ticklebox-space-xs);
+      }
+
+      .ticklebox-wheel-preset-title {
+        font-size: 0.875rem;
+        font-weight: 600;
+      }
+
+      .ticklebox-wheel-results {
+        background: var(--ticklebox-bg-card);
+        border-radius: var(--ticklebox-radius-lg);
+        padding: var(--ticklebox-space-xl);
+        margin: var(--ticklebox-space-lg) 0;
+        text-align: center;
+        display: none;
+      }
+
+      .ticklebox-wheel-result-icon {
+        font-size: 4rem;
+        margin-bottom: var(--ticklebox-space);
+        animation: ticklebox-bounce 1s infinite;
+      }
+
+      .ticklebox-wheel-result-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: var(--ticklebox-space);
+        color: var(--ticklebox-primary);
+      }
+
+      .ticklebox-wheel-result-text {
+        font-size: 1.5rem;
+        margin-bottom: var(--ticklebox-space-lg);
+        padding: var(--ticklebox-space);
+        background: var(--ticklebox-bg-secondary);
+        border-radius: var(--ticklebox-radius);
+        border-left: 4px solid var(--ticklebox-primary);
+      }
+
+      .ticklebox-wheel-history {
+        margin-top: var(--ticklebox-space-lg);
+      }
+
+      .ticklebox-wheel-history-list {
+        display: flex;
+        flex-direction: column;
+        gap: var(--ticklebox-space-sm);
+        max-height: 200px;
+        overflow-y: auto;
+        padding: var(--ticklebox-space-sm);
+        background: var(--ticklebox-bg-secondary);
+        border-radius: var(--ticklebox-radius);
+      }
+
+      .ticklebox-wheel-history-item {
+        display: flex;
+        align-items: center;
+        gap: var(--ticklebox-space);
+        padding: var(--ticklebox-space-sm);
+        background: var(--ticklebox-bg-tertiary);
+        border-radius: var(--ticklebox-radius);
+      }
+
+      .ticklebox-wheel-history-color {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+      }
+
+      .ticklebox-wheel-spin-animation {
+        animation: ticklebox-spin 0.1s linear infinite;
+      }
+
+      @keyframes ticklebox-wheel-spin {
+        from {
+          transform: rotate(0deg);
+        }
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .ticklebox-wheel-spinning {
+        animation: ticklebox-wheel-spin 0.05s linear infinite;
+      }
+
+      .ticklebox-wheel-settings {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--ticklebox-space);
+        margin: var(--ticklebox-space) 0;
+      }
+
+      .ticklebox-wheel-setting {
+        display: flex;
+        flex-direction: column;
+        gap: var(--ticklebox-space-xs);
+      }
+
+      .ticklebox-wheel-setting-label {
+        font-size: 0.875rem;
+        color: var(--ticklebox-text-secondary);
+      }
+
+      .ticklebox-wheel-setting-input {
+        padding: var(--ticklebox-space-sm);
+        border: 2px solid var(--ticklebox-border);
+        border-radius: var(--ticklebox-radius);
+        background: var(--ticklebox-bg-secondary);
+        color: var(--ticklebox-text-primary);
+      }
+
+      .ticklebox-wheel-actions {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--ticklebox-space);
+        margin-top: var(--ticklebox-space);
+      }
+    </style>
+  </head>
+  <body>
+    <!-- components/navbar.html - FIXED VERSION -->
+
+
+    <div id="tickleboxNavbarContainer"></div>
+
+    <main class="ticklebox-container">
+      <div class="ticklebox-game-header">
+        <div class="ticklebox-game-header-icon">🎡</div>
+        <div class="ticklebox-game-header-info">
+          <h1 class="ticklebox-game-title">Spin the Wheel</h1>
+          <p class="ticklebox-game-subtitle">
+            Spin for fun dares, gifts, or random messages
+          </p>
+          <div class="ticklebox-game-meta">
+            <span class="ticklebox-game-rating">⭐ 4.8 (1.5M+ plays)</span>
+            <span class="ticklebox-game-category">🎲 Fun</span>
+            <span class="ticklebox-game-time">⏱️ 1-3 min</span>
+          </div>
+        </div>
+        <button class="ticklebox-game-share" id="tickleboxWheelShare">
+          <svg viewBox="0 0 24 24" width="20" height="20">
+            <path
+              fill="currentColor"
+              d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"
+            />
+          </svg>
+          Share
+        </button>
+      </div>
+
+      <div class="ticklebox-game-content">
+        <div class="ticklebox-wheel-container">
+          <div class="ticklebox-wheel-editor">
+            <div class="ticklebox-wheel-visual">
+              <div class="ticklebox-wheel-canvas-container">
+                <div class="ticklebox-wheel-pointer"></div>
+                <canvas
+                  id="tickleboxWheelCanvas"
+                  class="ticklebox-wheel-canvas"
+                ></canvas>
+                <div class="ticklebox-wheel-center" id="tickleboxSpinButton">
+                  SPIN
+                </div>
+              </div>
+            </div>
+
+            <div class="ticklebox-wheel-controls">
+              <div class="ticklebox-wheel-section">
+                <div class="ticklebox-wheel-title">Wheel Items</div>
+                <div class="ticklebox-wheel-items" id="tickleboxWheelItems">
+                  <!-- Items will be added here -->
+                </div>
+
+                <div class="ticklebox-wheel-input-group">
+                  <input
+                    type="text"
+                    class="ticklebox-wheel-input"
+                    id="tickleboxItemInput"
+                    placeholder="Enter item text"
+                  />
+                  <input
+                    type="color"
+                    class="ticklebox-wheel-color-input"
+                    id="tickleboxItemColor"
+                    value="#7c3aed"
+                  />
+                  <button
+                    class="ticklebox-wheel-btn ticklebox-wheel-btn-primary"
+                    id="tickleboxAddItem"
+                  >
+                    Add
+                  </button>
+                </div>
+              </div>
+
+              <div class="ticklebox-wheel-section">
+                <div class="ticklebox-wheel-title">Quick Presets</div>
+                <div class="ticklebox-wheel-presets" id="tickleboxWheelPresets">
+                  <!-- Presets will be loaded by JavaScript -->
+                </div>
+              </div>
+
+              <div class="ticklebox-wheel-section">
+                <div class="ticklebox-wheel-title">Settings</div>
+                <div class="ticklebox-wheel-settings">
+                  <div class="ticklebox-wheel-setting">
+                    <label class="ticklebox-wheel-setting-label"
+                      >Spin Duration (s)</label
+                    >
+                    <input
+                      type="number"
+                      class="ticklebox-wheel-setting-input"
+                      id="tickleboxSpinDuration"
+                      min="2"
+                      max="10"
+                      value="5"
+                    />
+                  </div>
+                  <div class="ticklebox-wheel-setting">
+                    <label class="ticklebox-wheel-setting-label"
+                      >Spin Power</label
+                    >
+                    <input
+                      type="range"
+                      class="ticklebox-wheel-setting-input"
+                      id="tickleboxSpinPower"
+                      min="1"
+                      max="10"
+                      value="7"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div class="ticklebox-wheel-actions">
+                <button
+                  class="ticklebox-wheel-btn ticklebox-wheel-btn-secondary"
+                  id="tickleboxClearItems"
+                >
+                  Clear All
+                </button>
+                <button
+                  class="ticklebox-wheel-btn ticklebox-wheel-btn-primary"
+                  id="tickleboxRandomSpin"
+                >
+                  Random Spin
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="ticklebox-wheel-results" id="tickleboxWheelResults">
+            <!-- Results will be shown here -->
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- components/footer.html - FIXED VERSION -->
+
+    <div id="tickleboxFooterContainer"></div>
+
+    <script src="../js/ticklebox-main.js"></script>
+    <script>
+      // Wheel presets
+      const TICKLEBOX_WHEEL_PRESETS = [
+          {
+              id: 'dares',
+              icon: '😜',
+              title: 'Fun Dares',
+              items: [
+                  { text: 'Do a silly dance', color: '#FF6B6B' },
+                  { text: 'Sing a song loudly', color: '#4ECDC4' },
+                  { text: 'Tell a joke', color: '#FFD166' },
+                  { text: 'Imitate an animal', color: '#06D6A0' },
+                  { text: 'Do 10 pushups', color: '#118AB2' },
+                  { text: 'Say alphabet backwards', color: '#EF476F' },
+                  { text: 'Make a funny face', color: '#FFD166' },
+                  { text: 'Give a compliment', color: '#06D6A0' }
+              ]
+          },
+          {
+              id: 'gifts',
+              icon: '🎁',
+              title: 'Virtual Gifts',
+              items: [
+                  { text: 'Virtual Hug 🤗', color: '#FF6B6B' },
+                  { text: 'Digital High Five ✋', color: '#4ECDC4' },
+                  { text: 'Compliment Card 💌', color: '#FFD166' },
+                  { text: 'Good Luck Charm 🍀', color: '#06D6A0' },
+                  { text: 'Joke of the Day 😂', color: '#118AB2' },
+                  { text: 'Virtual Cookie 🍪', color: '#EF476F' },
+                  { text: 'Star Sticker ⭐', color: '#FFD166' },
+                  { text: 'Rainbow 🌈', color: '#06D6A0' }
+              ]
+          },
+          {
+              id: 'activities',
+              icon: '🎮',
+              title: 'Fun Activities',
+              items: [
+                  { text: 'Watch a movie', color: '#FF6B6B' },
+                  { text: 'Play a game', color: '#4ECDC4' },
+                  { text: 'Read a book', color: '#FFD166' },
+                  { text: 'Go for a walk', color: '#06D6A0' },
+                  { text: 'Cook something new', color: '#118AB2' },
+                  { text: 'Call a friend', color: '#EF476F' },
+                  { text: 'Learn something', color: '#FFD166' },
+                  { text: 'Take photos', color: '#06D6A0' }
+              ]
+          },
+          {
+              id: 'questions',
+              icon: '❓',
+              title: 'Random Questions',
+              items: [
+                  { text: 'Favorite childhood memory?', color: '#FF6B6B' },
+                  { text: 'Dream vacation spot?', color: '#4ECDC4' },
+                  { text: 'Superpower you want?', color: '#FFD166' },
+                  { text: 'Favorite movie?', color: '#06D6A0' },
+                  { text: 'Most embarrassing moment?', color: '#118AB2' },
+                  { text: 'Hidden talent?', color: '#EF476F' },
+                  { text: 'Bucket list item?', color: '#FFD166' },
+                  { text: 'Favorite food?', color: '#06D6A0' }
+              ]
+          }
+      ];
+
+      class TickleboxWheelGame {
+          constructor() {
+              this.canvas = document.getElementById('tickleboxWheelCanvas');
+              this.ctx = this.canvas.getContext('2d');
+              this.items = [];
+              this.isSpinning = false;
+              this.rotation = 0;
+              this.spinVelocity = 0;
+              this.spinDeceleration = 0;
+              this.selectedItem = null;
+              this.spinHistory = [];
+              this.init();
+          }
+
+          init() {
+              this.setupCanvas();
+              this.loadPresets();
+              this.setupEventListeners();
+              this.loadDefaultItems();
+              this.drawWheel();
+          }
+
+          setupCanvas() {
+              // Set canvas size
+              this.canvas.width = 400;
+              this.canvas.height = 400;
+          }
+
+          loadPresets() {
+              const presetsDiv = document.getElementById('tickleboxWheelPresets');
+              TICKLEBOX_WHEEL_PRESETS.forEach(preset => {
+                  const presetDiv = document.createElement('div');
+                  presetDiv.className = 'ticklebox-wheel-preset';
+                  presetDiv.dataset.preset = preset.id;
+                  presetDiv.innerHTML = `
+                      <div class="ticklebox-wheel-preset-icon">${preset.icon}</div>
+                      <div class="ticklebox-wheel-preset-title">${preset.title}</div>
+                  `;
+
+                  presetDiv.addEventListener('click', () => {
+                      this.loadPreset(preset.id);
+                  });
+
+                  presetsDiv.appendChild(presetDiv);
+              });
+          }
+
+          setupEventListeners() {
+              // Spin button
+              document.getElementById('tickleboxSpinButton').addEventListener('click', () => {
+                  this.spinWheel();
+              });
+
+              // Add item
+              document.getElementById('tickleboxAddItem').addEventListener('click', () => {
+                  this.addItem();
+              });
+
+              // Enter key in input
+              document.getElementById('tickleboxItemInput').addEventListener('keypress', (e) => {
+                  if (e.key === 'Enter') {
+                      this.addItem();
+                  }
+              });
+
+              // Clear items
+              document.getElementById('tickleboxClearItems').addEventListener('click', () => {
+                  if (confirm('Clear all items from the wheel?')) {
+                      this.items = [];
+                      this.updateItemsList();
+                      this.drawWheel();
+                  }
+              });
+
+              // Random spin
+              document.getElementById('tickleboxRandomSpin').addEventListener('click', () => {
+                  this.spinWheel();
+              });
+
+              // Share button
+              document.getElementById('tickleboxWheelShare').addEventListener('click', () => {
+                  this.shareResult();
+              });
+          }
+
+          loadDefaultItems() {
+              // Load default items from first preset
+              this.loadPreset('dares');
+          }
+
+          loadPreset(presetId) {
+              const preset = TICKLEBOX_WHEEL_PRESETS.find(p => p.id === presetId);
+              if (preset) {
+                  this.items = [...preset.items];
+                  this.updateItemsList();
+                  this.drawWheel();
+              }
+          }
+
+          addItem() {
+              const input = document.getElementById('tickleboxItemInput');
+              const colorInput = document.getElementById('tickleboxItemColor');
+
+              const text = input.value.trim();
+              const color = colorInput.value;
+
+              if (!text) {
+                  alert('Please enter item text');
+                  return;
+              }
+
+              if (this.items.length >= 12) {
+                  alert('Maximum 12 items allowed');
+                  return;
+              }
+
+              this.items.push({ text, color });
+              this.updateItemsList();
+              this.drawWheel();
+
+              // Clear input
+              input.value = '';
+              input.focus();
+          }
+
+          updateItemsList() {
+              const itemsDiv = document.getElementById('tickleboxWheelItems');
+              itemsDiv.innerHTML = '';
+
+              this.items.forEach((item, index) => {
+                  const itemDiv = document.createElement('div');
+                  itemDiv.className = 'ticklebox-wheel-item';
+                  itemDiv.innerHTML = `
+                      <div class="ticklebox-wheel-item-color" style="background-color: ${item.color}"></div>
+                      <div class="ticklebox-wheel-item-text">${item.text}</div>
+                      <button class="ticklebox-wheel-item-remove" data-index="${index}">✕</button>
+                  `;
+
+                  // Remove button
+                  itemDiv.querySelector('.ticklebox-wheel-item-remove').addEventListener('click', (e) => {
+                      e.stopPropagation();
+                      this.removeItem(index);
+                  });
+
+                  itemsDiv.appendChild(itemDiv);
+              });
+          }
+
+          removeItem(index) {
+              this.items.splice(index, 1);
+              this.updateItemsList();
+              this.drawWheel();
+          }
+
+          drawWheel() {
+              if (this.items.length === 0) {
+                  this.drawEmptyWheel();
+                  return;
+              }
+
+              const centerX = this.canvas.width / 2;
+              const centerY = this.canvas.height / 2;
+              const radius = Math.min(centerX, centerY) - 10;
+
+              // Clear canvas
+              this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+              // Draw wheel segments
+              const segmentAngle = (2 * Math.PI) / this.items.length;
+
+              this.items.forEach((item, index) => {
+                  const startAngle = this.rotation + (index * segmentAngle);
+                  const endAngle = startAngle + segmentAngle;
+
+                  // Draw segment
+                  this.ctx.beginPath();
+                  this.ctx.moveTo(centerX, centerY);
+                  this.ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+                  this.ctx.closePath();
+
+                  // Fill with color
+                  this.ctx.fillStyle = item.color;
+                  this.ctx.fill();
+
+                  // Draw segment border
+                  this.ctx.strokeStyle = '#ffffff';
+                  this.ctx.lineWidth = 2;
+                  this.ctx.stroke();
+
+                  // Draw text
+                  this.ctx.save();
+                  this.ctx.translate(centerX, centerY);
+                  this.ctx.rotate(startAngle + segmentAngle / 2);
+
+                  this.ctx.fillStyle = '#ffffff';
+                  this.ctx.font = 'bold 14px Arial';
+                  this.ctx.textAlign = 'center';
+                  this.ctx.textBaseline = 'middle';
+
+                  // Wrap text
+                  const maxWidth = radius * 0.7;
+                  const lines = this.wrapText(item.text, maxWidth, 14);
+
+                  lines.forEach((line, lineIndex) => {
+                      this.ctx.fillText(
+                          line,
+                          radius * 0.5,
+                          (lineIndex - (lines.length - 1) / 2) * 16
+                      );
+                  });
+
+                  this.ctx.restore();
+              });
+
+              // Draw center circle
+              this.ctx.beginPath();
+              this.ctx.arc(centerX, centerY, 30, 0, Math.PI * 2);
+              this.ctx.fillStyle = '#ffffff';
+              this.ctx.fill();
+              this.ctx.strokeStyle = var('--ticklebox-primary');
+              this.ctx.lineWidth = 4;
+              this.ctx.stroke();
+          }
+
+          drawEmptyWheel() {
+              const centerX = this.canvas.width / 2;
+              const centerY = this.canvas.height / 2;
+              const radius = Math.min(centerX, centerY) - 10;
+
+              // Clear canvas
+              this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+              // Draw empty wheel
+              this.ctx.beginPath();
+              this.ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+              this.ctx.fillStyle = '#f1f5f9';
+              this.ctx.fill();
+              this.ctx.strokeStyle = '#cbd5e1';
+              this.ctx.lineWidth = 2;
+              this.ctx.stroke();
+
+              // Draw message
+              this.ctx.fillStyle = '#94a3b8';
+              this.ctx.font = 'bold 16px Arial';
+              this.ctx.textAlign = 'center';
+              this.ctx.textBaseline = 'middle';
+              this.ctx.fillText('Add items to the wheel', centerX, centerY);
+          }
+
+          wrapText(text, maxWidth, fontSize) {
+              const words = text.split(' ');
+              const lines = [];
+              let currentLine = words[0];
+
+              for (let i = 1; i < words.length; i++) {
+                  const word = words[i];
+                  const width = this.ctx.measureText(currentLine + ' ' + word).width;
+                  if (width < maxWidth) {
+                      currentLine += ' ' + word;
+                  } else {
+                      lines.push(currentLine);
+                      currentLine = word;
+                  }
+              }
+              lines.push(currentLine);
+              return lines;
+          }
+
+          spinWheel() {
+              if (this.items.length === 0) {
+                  alert('Please add items to the wheel first');
+                  return;
+              }
+
+              if (this.isSpinning) return;
+
+              this.isSpinning = true;
+              this.selectedItem = null;
+
+              // Get spin settings
+              const duration = parseInt(document.getElementById('tickleboxSpinDuration').value);
+              const power = parseInt(document.getElementById('tickleboxSpinPower').value);
+
+              // Calculate spin
+              const minVelocity = 5 + power * 2;
+              const maxVelocity = 10 + power * 3;
+              this.spinVelocity = Math.random() * (maxVelocity - minVelocity) + minVelocity;
+              this.spinDeceleration = this.spinVelocity / (duration * 60); // 60 FPS
+
+              // Start spinning
+              this.spinAnimation();
+
+              // Hide results
+              document.getElementById('tickleboxWheelResults').style.display = 'none';
+          }
+
+          spinAnimation() {
+              if (!this.isSpinning) return;
+
+              // Update rotation
+              this.rotation += this.spinVelocity * (Math.PI / 180);
+              this.spinVelocity -= this.spinDeceleration;
+
+              // Draw wheel with new rotation
+              this.drawWheel();
+
+              // Check if spinning should stop
+              if (this.spinVelocity <= 0.01) {
+                  this.isSpinning = false;
+                  this.spinVelocity = 0;
+                  this.determineResult();
+              } else {
+                  requestAnimationFrame(() => this.spinAnimation());
+              }
+          }
+
+          determineResult() {
+              // Normalize rotation to 0-360 degrees
+              let normalizedRotation = this.rotation % (Math.PI * 2);
+              if (normalizedRotation < 0) normalizedRotation += Math.PI * 2;
+
+              // Convert to degrees
+              const degrees = normalizedRotation * (180 / Math.PI);
+
+              // Determine selected segment (pointer is at top, so offset by 90 degrees)
+              const pointerAngle = 90; // Degrees
+              let selectedAngle = (360 - (degrees % 360) + pointerAngle) % 360;
+
+              const segmentAngle = 360 / this.items.length;
+              const selectedIndex = Math.floor(selectedAngle / segmentAngle) % this.items.length;
+
+              this.selectedItem = this.items[selectedIndex];
+
+              // Add to history
+              this.spinHistory.unshift({
+                  item: this.selectedItem,
+                  timestamp: new Date().toLocaleTimeString()
+              });
+
+              // Keep only last 10 history items
+              if (this.spinHistory.length > 10) {
+                  this.spinHistory.pop();
+              }
+
+              // Show result
+              this.showResult();
+          }
+
+          showResult() {
+              if (!this.selectedItem) return;
+
+              const resultsDiv = document.getElementById('tickleboxWheelResults');
+              resultsDiv.style.display = 'block';
+              resultsDiv.style.backgroundColor = this.selectedItem.color + '20';
+              resultsDiv.style.border = `4px solid ${this.selectedItem.color}`;
+
+              // Create result icon based on item
+              let icon = '🎯';
+              if (this.selectedItem.text.toLowerCase().includes('dance')) icon = '💃';
+              else if (this.selectedItem.text.toLowerCase().includes('sing')) icon = '🎤';
+              else if (this.selectedItem.text.toLowerCase().includes('joke')) icon = '😂';
+              else if (this.selectedItem.text.toLowerCase().includes('hug')) icon = '🤗';
+              else if (this.selectedItem.text.toLowerCase().includes('cookie')) icon = '🍪';
+              else if (this.selectedItem.text.toLowerCase().includes('star')) icon = '⭐';
+
+              resultsDiv.innerHTML = `
+                  <div class="ticklebox-wheel-result-icon">${icon}</div>
+                  <div class="ticklebox-wheel-result-title">You Got:</div>
+                  <div class="ticklebox-wheel-result-text">${this.selectedItem.text}</div>
+
+                  <div class="ticklebox-wheel-history">
+                      <div class="ticklebox-wheel-title">Spin History</div>
+                      <div class="ticklebox-wheel-history-list" id="tickleboxSpinHistory">
+                          ${this.spinHistory.map(entry => `
+                              <div class="ticklebox-wheel-history-item">
+                                  <div class="ticklebox-wheel-history-color" style="background-color: ${entry.item.color}"></div>
+                                  <div class="ticklebox-wheel-item-text">${entry.item.text}</div>
+                                  <div style="font-size: 0.75rem; color: var(--ticklebox-text-tertiary);">${entry.timestamp}</div>
+                              </div>
+                          `).join('')}
+                      </div>
+                  </div>
+
+                  <div class="ticklebox-wheel-actions" style="margin-top: var(--ticklebox-space);">
+                      <button class="ticklebox-wheel-btn ticklebox-wheel-btn-secondary" id="tickleboxSpinAgain">
+                          🔄 Spin Again
+                      </button>
+                      <button class="ticklebox-wheel-btn ticklebox-wheel-btn-primary" id="tickleboxShareResult">
+                          📤 Share Result
+                      </button>
+                  </div>
+              `;
+
+              // Add event listeners to new buttons
+              document.getElementById('tickleboxSpinAgain').addEventListener('click', () => {
+                  this.spinWheel();
+              });
+
+              document.getElementById('tickleboxShareResult').addEventListener('click', () => {
+                  this.shareResult();
+              });
+
+              // Scroll to results
+              resultsDiv.scrollIntoView({ behavior: 'smooth' });
+          }
+
+          shareResult() {
+              if (!this.selectedItem) {
+                  alert('Spin the wheel first!');
+                  return;
+              }
+
+              const share = new TickleboxShare({
+                  title: 'Spin the Wheel - TickleBox',
+                  text: `I spun the wheel and got: "${this.selectedItem.text}"! Try it yourself! 🎡`,
+                  url: window.location.href
+              });
+              share.openModal();
+          }
+      }
+
+      // Initialize when page loads
+      document.addEventListener('DOMContentLoaded', () => {
+          // Load navbar and footer
+          fetch('../components/navbar.html')
+              .then(response => response.text())
+              .then(html => {
+                  document.getElementById('tickleboxNavbarContainer').innerHTML = html;
+                  initTheme();
+                  initSearch();
+                  initDropdowns();
+                  initMobileMenu();
+              });
+
+          fetch('../components/footer.html')
+              .then(response => response.text())
+              .then(html => {
+                  document.getElementById('tickleboxFooterContainer').innerHTML = html;
+                  initFooter();
+              });
+
+          // Initialize wheel game
+          window.tickleboxWheelGame = new TickleboxWheelGame();
+      });
+    </script>
+  </body>
+</html>

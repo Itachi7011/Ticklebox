@@ -1,0 +1,664 @@
+<!-- games/personality-test.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personality Match Test - TickleBox</title>
+    <link rel="stylesheet" href="../css/ticklebox-styles.css">
+    <link rel="stylesheet" href="../css/ticklebox-animations.css">
+    <style>
+        .ticklebox-personality-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .ticklebox-personality-inputs {
+            background: var(--ticklebox-bg-card);
+            border-radius: var(--ticklebox-radius-lg);
+            padding: var(--ticklebox-space-xl);
+            margin: var(--ticklebox-space-lg) 0;
+            box-shadow: var(--ticklebox-shadow);
+        }
+        
+        .ticklebox-personality-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--ticklebox-space-lg);
+            margin-bottom: var(--ticklebox-space);
+        }
+        
+        @media (max-width: 640px) {
+            .ticklebox-personality-row {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .ticklebox-personality-input-group {
+            margin-bottom: var(--ticklebox-space);
+        }
+        
+        .ticklebox-personality-label {
+            display: block;
+            margin-bottom: var(--ticklebox-space-xs);
+            color: var(--ticklebox-text-secondary);
+            font-weight: 500;
+        }
+        
+        .ticklebox-personality-input {
+            width: 100%;
+            padding: var(--ticklebox-space);
+            border: 2px solid var(--ticklebox-border);
+            border-radius: var(--ticklebox-radius);
+            background: var(--ticklebox-bg-secondary);
+            color: var(--ticklebox-text-primary);
+            font-size: 1rem;
+            transition: all var(--ticklebox-transition-fast);
+        }
+        
+        .ticklebox-personality-input:focus {
+            outline: none;
+            border-color: var(--ticklebox-primary);
+            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+        }
+        
+        .ticklebox-personality-select {
+            width: 100%;
+            padding: var(--ticklebox-space);
+            border: 2px solid var(--ticklebox-border);
+            border-radius: var(--ticklebox-radius);
+            background: var(--ticklebox-bg-secondary);
+            color: var(--ticklebox-text-primary);
+            font-size: 1rem;
+            cursor: pointer;
+        }
+        
+        .ticklebox-personality-result {
+            background: linear-gradient(135deg, var(--ticklebox-primary-light), var(--ticklebox-secondary-light));
+            border-radius: var(--ticklebox-radius-lg);
+            padding: var(--ticklebox-space-xl);
+            margin: var(--ticklebox-space-lg) 0;
+            color: white;
+            text-align: center;
+            display: none;
+            animation: ticklebox-scale-in var(--ticklebox-transition);
+        }
+        
+        .ticklebox-compatibility-score {
+            font-size: 4rem;
+            font-weight: 700;
+            margin: var(--ticklebox-space) 0;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        
+        .ticklebox-compatibility-text {
+            font-size: 1.5rem;
+            margin-bottom: var(--ticklebox-space);
+            font-weight: 600;
+        }
+        
+        .ticklebox-compatibility-description {
+            font-size: 1rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        
+        .ticklebox-personality-details {
+            background: var(--ticklebox-bg-card);
+            border-radius: var(--ticklebox-radius);
+            padding: var(--ticklebox-space);
+            margin-top: var(--ticklebox-space-lg);
+            display: none;
+        }
+        
+        .ticklebox-detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: var(--ticklebox-space-sm) 0;
+            border-bottom: 1px solid var(--ticklebox-border);
+        }
+        
+        .ticklebox-detail-row:last-child {
+            border-bottom: none;
+        }
+        
+        .ticklebox-detail-label {
+            color: var(--ticklebox-text-secondary);
+        }
+        
+        .ticklebox-detail-value {
+            font-weight: 600;
+        }
+        
+        .ticklebox-zodiac-icon {
+            font-size: 2rem;
+            margin-bottom: var(--ticklebox-space-sm);
+        }
+        
+        .ticklebox-zodiac-compatibility {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: var(--ticklebox-space);
+            margin-top: var(--ticklebox-space);
+        }
+        
+        .ticklebox-zodiac-item {
+            background: var(--ticklebox-bg-secondary);
+            border-radius: var(--ticklebox-radius);
+            padding: var(--ticklebox-space);
+            text-align: center;
+            transition: transform var(--ticklebox-transition-fast);
+        }
+        
+        .ticklebox-zodiac-item:hover {
+            transform: translateY(-2px);
+        }
+        
+        .ticklebox-btn-calculate {
+            width: 100%;
+            padding: var(--ticklebox-space);
+            background: var(--ticklebox-primary);
+            color: white;
+            border: none;
+            border-radius: var(--ticklebox-radius);
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--ticklebox-transition-fast);
+            margin: var(--ticklebox-space) 0;
+        }
+        
+        .ticklebox-btn-calculate:hover {
+            background: var(--ticklebox-primary-dark);
+            transform: translateY(-2px);
+            box-shadow: var(--ticklebox-shadow-lg);
+        }
+        
+        .ticklebox-btn-calculate:active {
+            transform: translateY(0);
+        }
+        
+        .ticklebox-compatibility-meter {
+            height: 20px;
+            background: var(--ticklebox-bg-tertiary);
+            border-radius: 10px;
+            margin: var(--ticklebox-space) 0;
+            overflow: hidden;
+        }
+        
+        .ticklebox-compatibility-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ef4444, #f59e0b, #10b981);
+            border-radius: 10px;
+            transition: width 1s ease;
+        }
+    </style>
+</head>
+<body>
+    <!-- components/navbar.html - FIXED VERSION -->
+
+
+    <div id="tickleboxNavbarContainer"></div>
+
+    <main class="ticklebox-container">
+        <div class="ticklebox-game-header">
+            <div class="ticklebox-game-header-icon">💑</div>
+            <div class="ticklebox-game-header-info">
+                <h1 class="ticklebox-game-title">Personality Match Test</h1>
+                <p class="ticklebox-game-subtitle">Discover relationship compatibility based on names and birthdays</p>
+                <div class="ticklebox-game-meta">
+                    <span class="ticklebox-game-rating">⭐ 4.9 (500K+ plays)</span>
+                    <span class="ticklebox-game-category">🎭 Personality</span>
+                    <span class="ticklebox-game-time">⏱️ 2-3 min</span>
+                </div>
+            </div>
+            <button class="ticklebox-game-share" id="tickleboxPersonalityShare">
+                <svg viewBox="0 0 24 24" width="20" height="20">
+                    <path fill="currentColor" d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/>
+                </svg>
+                Share
+            </button>
+        </div>
+
+        <div class="ticklebox-game-content">
+            <div class="ticklebox-personality-container">
+                <div class="ticklebox-personality-inputs">
+                    <div class="ticklebox-personality-row">
+                        <div class="ticklebox-personality-input-group">
+                            <label class="ticklebox-personality-label">Your Name</label>
+                            <input type="text" class="ticklebox-personality-input" id="tickleboxUserName" placeholder="Enter your name">
+                        </div>
+                        <div class="ticklebox-personality-input-group">
+                            <label class="ticklebox-personality-label">Your Birthday</label>
+                            <input type="date" class="ticklebox-personality-input" id="tickleboxUserBirthday">
+                        </div>
+                    </div>
+                    
+                    <div class="ticklebox-personality-row">
+                        <div class="ticklebox-personality-input-group">
+                            <label class="ticklebox-personality-label">Partner's Name</label>
+                            <input type="text" class="ticklebox-personality-input" id="tickleboxPartnerName" placeholder="Enter partner's name">
+                        </div>
+                        <div class="ticklebox-personality-input-group">
+                            <label class="ticklebox-personality-label">Partner's Birthday</label>
+                            <input type="date" class="ticklebox-personality-input" id="tickleboxPartnerBirthday">
+                        </div>
+                    </div>
+                    
+                    <div class="ticklebox-personality-row">
+                        <div class="ticklebox-personality-input-group">
+                            <label class="ticklebox-personality-label">Your Zodiac Sign</label>
+                            <select class="ticklebox-personality-select" id="tickleboxUserZodiac">
+                                <option value="">Select your zodiac</option>
+                                <option value="aries">♈ Aries (Mar 21 - Apr 19)</option>
+                                <option value="taurus">♉ Taurus (Apr 20 - May 20)</option>
+                                <option value="gemini">♊ Gemini (May 21 - Jun 20)</option>
+                                <option value="cancer">♋ Cancer (Jun 21 - Jul 22)</option>
+                                <option value="leo">♌ Leo (Jul 23 - Aug 22)</option>
+                                <option value="virgo">♍ Virgo (Aug 23 - Sep 22)</option>
+                                <option value="libra">♎ Libra (Sep 23 - Oct 22)</option>
+                                <option value="scorpio">♏ Scorpio (Oct 23 - Nov 21)</option>
+                                <option value="sagittarius">♐ Sagittarius (Nov 22 - Dec 21)</option>
+                                <option value="capricorn">♑ Capricorn (Dec 22 - Jan 19)</option>
+                                <option value="aquarius">♒ Aquarius (Jan 20 - Feb 18)</option>
+                                <option value="pisces">♓ Pisces (Feb 19 - Mar 20)</option>
+                            </select>
+                        </div>
+                        <div class="ticklebox-personality-input-group">
+                            <label class="ticklebox-personality-label">Partner's Zodiac Sign</label>
+                            <select class="ticklebox-personality-select" id="tickleboxPartnerZodiac">
+                                <option value="">Select partner's zodiac</option>
+                                <option value="aries">♈ Aries (Mar 21 - Apr 19)</option>
+                                <option value="taurus">♉ Taurus (Apr 20 - May 20)</option>
+                                <option value="gemini">♊ Gemini (May 21 - Jun 20)</option>
+                                <option value="cancer">♋ Cancer (Jun 21 - Jul 22)</option>
+                                <option value="leo">♌ Leo (Jul 23 - Aug 22)</option>
+                                <option value="virgo">♍ Virgo (Aug 23 - Sep 22)</option>
+                                <option value="libra">♎ Libra (Sep 23 - Oct 22)</option>
+                                <option value="scorpio">♏ Scorpio (Oct 23 - Nov 21)</option>
+                                <option value="sagittarius">♐ Sagittarius (Nov 22 - Dec 21)</option>
+                                <option value="capricorn">♑ Capricorn (Dec 22 - Jan 19)</option>
+                                <option value="aquarius">♒ Aquarius (Jan 20 - Feb 18)</option>
+                                <option value="pisces">♓ Pisces (Feb 19 - Mar 20)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <button class="ticklebox-btn-calculate" id="tickleboxCalculateCompatibility">
+                        Calculate Compatibility 🔮
+                    </button>
+                </div>
+                
+                <div class="ticklebox-personality-result" id="tickleboxCompatibilityResult">
+                    <div class="ticklebox-compatibility-score" id="tickleboxCompatibilityScore">0%</div>
+                    <div class="ticklebox-compatibility-text" id="tickleboxCompatibilityText">Calculating...</div>
+                    <div class="ticklebox-compatibility-description" id="tickleboxCompatibilityDescription"></div>
+                    
+                    <div class="ticklebox-compatibility-meter">
+                        <div class="ticklebox-compatibility-fill" id="tickleboxCompatibilityFill" style="width: 0%"></div>
+                    </div>
+                    
+                    <button class="ticklebox-btn-calculate" id="tickleboxShowDetails">
+                        Show Detailed Analysis 📊
+                    </button>
+                </div>
+                
+                <div class="ticklebox-personality-details" id="tickleboxCompatibilityDetails">
+                    <h3>Detailed Analysis</h3>
+                    <div class="ticklebox-detail-row">
+                        <span class="ticklebox-detail-label">Name Compatibility</span>
+                        <span class="ticklebox-detail-value" id="tickleboxNameCompatibility">0%</span>
+                    </div>
+                    <div class="ticklebox-detail-row">
+                        <span class="ticklebox-detail-label">Birthday Harmony</span>
+                        <span class="ticklebox-detail-value" id="tickleboxBirthdayCompatibility">0%</span>
+                    </div>
+                    <div class="ticklebox-detail-row">
+                        <span class="ticklebox-detail-label">Zodiac Match</span>
+                        <span class="ticklebox-detail-value" id="tickleboxZodiacCompatibility">0%</span>
+                    </div>
+                    <div class="ticklebox-detail-row">
+                        <span class="ticklebox-detail-label">Numerology Score</span>
+                        <span class="ticklebox-detail-value" id="tickleboxNumerologyScore">0</span>
+                    </div>
+                    <div class="ticklebox-detail-row">
+                        <span class="ticklebox-detail-label">Relationship Advice</span>
+                        <span class="ticklebox-detail-value" id="tickleboxRelationshipAdvice"></span>
+                    </div>
+                    
+                    <div class="ticklebox-zodiac-compatibility" id="tickleboxZodiacDetails"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- components/footer.html - FIXED VERSION -->
+
+    <div id="tickleboxFooterContainer"></div>
+
+    <script src="../js/ticklebox-main.js"></script>
+    <script>
+        // Zodiac compatibility data
+        const TICKLEBOX_ZODIAC_COMPATIBILITY = {
+            aries: { good: ['leo', 'sagittarius', 'gemini'], bad: ['cancer', 'capricorn'] },
+            taurus: { good: ['virgo', 'capricorn', 'cancer'], bad: ['leo', 'aquarius'] },
+            gemini: { good: ['libra', 'aquarius', 'aries'], bad: ['virgo', 'pisces'] },
+            cancer: { good: ['scorpio', 'pisces', 'taurus'], bad: ['aries', 'libra'] },
+            leo: { good: ['aries', 'sagittarius', 'gemini'], bad: ['taurus', 'scorpio'] },
+            virgo: { good: ['taurus', 'capricorn', 'cancer'], bad: ['gemini', 'sagittarius'] },
+            libra: { good: ['gemini', 'aquarius', 'leo'], bad: ['cancer', 'capricorn'] },
+            scorpio: { good: ['cancer', 'pisces', 'virgo'], bad: ['leo', 'aquarius'] },
+            sagittarius: { good: ['aries', 'leo', 'aquarius'], bad: ['virgo', 'pisces'] },
+            capricorn: { good: ['taurus', 'virgo', 'pisces'], bad: ['aries', 'libra'] },
+            aquarius: { good: ['gemini', 'libra', 'sagittarius'], bad: ['taurus', 'scorpio'] },
+            pisces: { good: ['cancer', 'scorpio', 'capricorn'], bad: ['gemini', 'sagittarius'] }
+        };
+        
+        const TICKLEBOX_ZODIAC_ICONS = {
+            aries: '♈', taurus: '♉', gemini: '♊', cancer: '♋',
+            leo: '♌', virgo: '♍', libra: '♎', scorpio: '♏',
+            sagittarius: '♐', capricorn: '♑', aquarius: '♒', pisces: '♓'
+        };
+        
+        class TickleboxPersonalityTest {
+            constructor() {
+                this.init();
+            }
+            
+            init() {
+                // Set today's date as default for birthday inputs
+                const today = new Date().toISOString().split('T')[0];
+                document.getElementById('tickleboxUserBirthday').value = today;
+                document.getElementById('tickleboxPartnerBirthday').value = today;
+                
+                this.setupEventListeners();
+            }
+            
+            setupEventListeners() {
+                // Calculate compatibility
+                document.getElementById('tickleboxCalculateCompatibility').addEventListener('click', () => {
+                    this.calculateCompatibility();
+                });
+                
+                // Show details
+                document.getElementById('tickleboxShowDetails').addEventListener('click', () => {
+                    document.getElementById('tickleboxCompatibilityDetails').style.display = 'block';
+                    this.scrollToDetails();
+                });
+                
+                // Share button
+                document.getElementById('tickleboxPersonalityShare').addEventListener('click', () => {
+                    this.shareResult();
+                });
+            }
+            
+            calculateCompatibility() {
+                const userName = document.getElementById('tickleboxUserName').value.trim();
+                const userBirthday = document.getElementById('tickleboxUserBirthday').value;
+                const userZodiac = document.getElementById('tickleboxUserZodiac').value;
+                
+                const partnerName = document.getElementById('tickleboxPartnerName').value.trim();
+                const partnerBirthday = document.getElementById('tickleboxPartnerBirthday').value;
+                const partnerZodiac = document.getElementById('tickleboxPartnerZodiac').value;
+                
+                // Validate inputs
+                if (!userName || !partnerName) {
+                    alert('Please enter both names');
+                    return;
+                }
+                
+                if (!userBirthday || !partnerBirthday) {
+                    alert('Please select both birthdays');
+                    return;
+                }
+                
+                // Calculate scores
+                const nameScore = this.calculateNameCompatibility(userName, partnerName);
+                const birthdayScore = this.calculateBirthdayCompatibility(userBirthday, partnerBirthday);
+                const zodiacScore = this.calculateZodiacCompatibility(userZodiac, partnerZodiac);
+                
+                // Calculate final score with weighted average
+                const finalScore = Math.round(
+                    (nameScore * 0.3) + 
+                    (birthdayScore * 0.4) + 
+                    (zodiacScore * 0.3)
+                );
+                
+                // Update UI
+                this.displayResult(finalScore, nameScore, birthdayScore, zodiacScore, userName, partnerName);
+                this.displayZodiacDetails(userZodiac, partnerZodiac);
+            }
+            
+            calculateNameCompatibility(name1, name2) {
+                // Simple algorithm based on name length and character matches
+                const cleanName1 = name1.toLowerCase().replace(/[^a-z]/g, '');
+                const cleanName2 = name2.toLowerCase().replace(/[^a-z]/g, '');
+                
+                let commonLetters = 0;
+                const letters1 = new Set(cleanName1);
+                const letters2 = new Set(cleanName2);
+                
+                for (const letter of letters1) {
+                    if (letters2.has(letter)) {
+                        commonLetters++;
+                    }
+                }
+                
+                const maxLength = Math.max(cleanName1.length, cleanName2.length);
+                const score = Math.round((commonLetters / maxLength) * 100);
+                
+                return Math.min(score, 100);
+            }
+            
+            calculateBirthdayCompatibility(date1, date2) {
+                const d1 = new Date(date1);
+                const d2 = new Date(date2);
+                
+                // Calculate day of year for both dates
+                const start1 = new Date(d1.getFullYear(), 0, 0);
+                const diff1 = d1 - start1;
+                const dayOfYear1 = Math.floor(diff1 / (1000 * 60 * 60 * 24));
+                
+                const start2 = new Date(d2.getFullYear(), 0, 0);
+                const diff2 = d2 - start2;
+                const dayOfYear2 = Math.floor(diff2 / (1000 * 60 * 60 * 24));
+                
+                // Calculate absolute difference in days (considering year wrap-around)
+                const daysInYear = 365;
+                let dayDiff = Math.abs(dayOfYear1 - dayOfYear2);
+                dayDiff = Math.min(dayDiff, daysInYear - dayDiff);
+                
+                // Convert to compatibility score (closer days = higher score)
+                const score = 100 - Math.round((dayDiff / (daysInYear / 2)) * 100);
+                
+                return Math.max(0, score);
+            }
+            
+            calculateZodiacCompatibility(zodiac1, zodiac2) {
+                if (!zodiac1 || !zodiac2) return 50; // Default if not selected
+                
+                const compatibility = TICKLEBOX_ZODIAC_COMPATIBILITY[zodiac1];
+                
+                if (compatibility.good.includes(zodiac2)) {
+                    return 85;
+                } else if (compatibility.bad.includes(zodiac2)) {
+                    return 30;
+                } else {
+                    return 60; // Neutral compatibility
+                }
+            }
+            
+            calculateNumerology(name) {
+                // Simple numerology: sum of character positions modulo 9
+                const cleanName = name.toLowerCase().replace(/[^a-z]/g, '');
+                let sum = 0;
+                
+                for (let i = 0; i < cleanName.length; i++) {
+                    sum += cleanName.charCodeAt(i) - 96; // a=1, b=2, etc.
+                }
+                
+                // Reduce to single digit (1-9)
+                while (sum > 9) {
+                    sum = sum.toString().split('').reduce((a, b) => parseInt(a) + parseInt(b));
+                }
+                
+                return sum;
+            }
+            
+            displayResult(finalScore, nameScore, birthdayScore, zodiacScore, userName, partnerName) {
+                const resultDiv = document.getElementById('tickleboxCompatibilityResult');
+                const scoreDiv = document.getElementById('tickleboxCompatibilityScore');
+                const textDiv = document.getElementById('tickleboxCompatibilityText');
+                const descriptionDiv = document.getElementById('tickleboxCompatibilityDescription');
+                const fillDiv = document.getElementById('tickleboxCompatibilityFill');
+                
+                // Calculate numerology
+                const userNumerology = this.calculateNumerology(userName);
+                const partnerNumerology = this.calculateNumerology(partnerName);
+                const numerologyScore = Math.abs(userNumerology - partnerNumerology);
+                
+                // Update score with animation
+                scoreDiv.textContent = '0%';
+                fillDiv.style.width = '0%';
+                
+                setTimeout(() => {
+                    scoreDiv.textContent = `${finalScore}%`;
+                    fillDiv.style.width = `${finalScore}%`;
+                    
+                    // Add pulse animation
+                    scoreDiv.classList.add('ticklebox-animate-pulse');
+                    setTimeout(() => scoreDiv.classList.remove('ticklebox-animate-pulse'), 1000);
+                }, 300);
+                
+                // Set compatibility text
+                let compatibilityText = '';
+                let description = '';
+                
+                if (finalScore >= 90) {
+                    compatibilityText = 'Perfect Match! 💖';
+                    description = 'You two are meant to be! Your connection is incredibly strong and harmonious.';
+                } else if (finalScore >= 75) {
+                    compatibilityText = 'Excellent Match! 💕';
+                    description = 'Great compatibility! You have a strong foundation for a wonderful relationship.';
+                } else if (finalScore >= 60) {
+                    compatibilityText = 'Good Match! 😊';
+                    description = 'Good compatibility with room to grow. Communication will strengthen your bond.';
+                } else if (finalScore >= 40) {
+                    compatibilityText = 'Challenging Match 🤔';
+                    description = 'This relationship may require extra effort, but understanding each other can make it work.';
+                } else {
+                    compatibilityText = 'Difficult Match 😅';
+                    description = 'You have significant differences, but with patience and understanding, anything is possible.';
+                }
+                
+                textDiv.textContent = compatibilityText;
+                descriptionDiv.textContent = description;
+                
+                // Show result
+                resultDiv.style.display = 'block';
+                resultDiv.classList.add('ticklebox-animate-scale-in');
+                
+                // Update details
+                document.getElementById('tickleboxNameCompatibility').textContent = `${nameScore}%`;
+                document.getElementById('tickleboxBirthdayCompatibility').textContent = `${birthdayScore}%`;
+                document.getElementById('tickleboxZodiacCompatibility').textContent = `${zodiacScore}%`;
+                document.getElementById('tickleboxNumerologyScore').textContent = numerologyScore;
+                
+                // Set relationship advice
+                const advice = this.getRelationshipAdvice(finalScore);
+                document.getElementById('tickleboxRelationshipAdvice').textContent = advice;
+                
+                // Hide details initially
+                document.getElementById('tickleboxCompatibilityDetails').style.display = 'none';
+                
+                // Scroll to result
+                resultDiv.scrollIntoView({ behavior: 'smooth' });
+            }
+            
+            getRelationshipAdvice(score) {
+                if (score >= 90) return 'Nurture your natural connection';
+                if (score >= 75) return 'Keep communicating openly';
+                if (score >= 60) return 'Build on your similarities';
+                if (score >= 40) return 'Work on understanding differences';
+                return 'Focus on compromise and patience';
+            }
+            
+            displayZodiacDetails(zodiac1, zodiac2) {
+                if (!zodiac1 || !zodiac2) return;
+                
+                const zodiacDetailsDiv = document.getElementById('tickleboxZodiacDetails');
+                const compatibility = TICKLEBOX_ZODIAC_COMPATIBILITY[zodiac1];
+                
+                let html = `
+                    <div class="ticklebox-zodiac-item">
+                        <div class="ticklebox-zodiac-icon">${TICKLEBOX_ZODIAC_ICONS[zodiac1]}</div>
+                        <div>${zodiac1.charAt(0).toUpperCase() + zodiac1.slice(1)}</div>
+                    </div>
+                    <div class="ticklebox-zodiac-item">
+                        <div class="ticklebox-zodiac-icon">💝</div>
+                        <div>Compatibility</div>
+                    </div>
+                    <div class="ticklebox-zodiac-item">
+                        <div class="ticklebox-zodiac-icon">${TICKLEBOX_ZODIAC_ICONS[zodiac2]}</div>
+                        <div>${zodiac2.charAt(0).toUpperCase() + zodiac2.slice(1)}</div>
+                    </div>
+                `;
+                
+                // Add good matches
+                html += '<div class="ticklebox-zodiac-item" style="grid-column: span 3; text-align: center; background: var(--ticklebox-secondary-light); color: white;">';
+                html += '<strong>Best Matches for ' + zodiac1.charAt(0).toUpperCase() + zodiac1.slice(1) + ':</strong><br>';
+                html += compatibility.good.map(z => `${TICKLEBOX_ZODIAC_ICONS[z]} ${z.charAt(0).toUpperCase() + z.slice(1)}`).join(', ');
+                html += '</div>';
+                
+                zodiacDetailsDiv.innerHTML = html;
+            }
+            
+            scrollToDetails() {
+                document.getElementById('tickleboxCompatibilityDetails').scrollIntoView({ 
+                    behavior: 'smooth' 
+                });
+            }
+            
+            shareResult() {
+                const userName = document.getElementById('tickleboxUserName').value || 'You';
+                const partnerName = document.getElementById('tickleboxPartnerName').value || 'Your Partner';
+                const score = document.getElementById('tickleboxCompatibilityScore').textContent;
+                const text = document.getElementById('tickleboxCompatibilityText').textContent;
+                
+                const share = new TickleboxShare({
+                    title: 'Personality Match Test - TickleBox',
+                    text: `🎯 ${userName} & ${partnerName} have ${score} compatibility on TickleBox! ${text}`,
+                    url: window.location.href
+                });
+                share.openModal();
+            }
+        }
+        
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            // Load navbar and footer
+            fetch('../components/navbar.html')
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById('tickleboxNavbarContainer').innerHTML = html;
+                    initTheme();
+                    initSearch();
+                    initDropdowns();
+                    initMobileMenu();
+                });
+            
+            fetch('../components/footer.html')
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById('tickleboxFooterContainer').innerHTML = html;
+                    initFooter();
+                });
+            
+            // Initialize personality test
+            window.tickleboxPersonalityTest = new TickleboxPersonalityTest();
+        });
+    </script>
+</body>
+</html>

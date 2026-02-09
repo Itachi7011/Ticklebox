@@ -1,0 +1,850 @@
+<!-- games/scratch-off.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scratch-Off Reveal Cards - TickleBox</title>
+    <link rel="stylesheet" href="../css/ticklebox-styles.css">
+    <link rel="stylesheet" href="../css/ticklebox-animations.css">
+    <style>
+        .ticklebox-scratch-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .ticklebox-scratch-selection {
+            background: var(--ticklebox-bg-card);
+            border-radius: var(--ticklebox-radius-lg);
+            padding: var(--ticklebox-space-xl);
+            margin: var(--ticklebox-space-lg) 0;
+            box-shadow: var(--ticklebox-shadow);
+        }
+        
+        .ticklebox-scratch-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--ticklebox-space);
+            margin: var(--ticklebox-space-lg) 0;
+        }
+        
+        .ticklebox-scratch-card {
+            background: var(--ticklebox-bg-secondary);
+            border: 2px solid var(--ticklebox-border);
+            border-radius: var(--ticklebox-radius-lg);
+            padding: var(--ticklebox-space);
+            text-align: center;
+            cursor: pointer;
+            transition: all var(--ticklebox-transition-fast);
+        }
+        
+        .ticklebox-scratch-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--ticklebox-primary);
+            box-shadow: var(--ticklebox-shadow-lg);
+        }
+        
+        .ticklebox-scratch-card.active {
+            border-color: var(--ticklebox-primary);
+            background: var(--ticklebox-primary-light);
+            color: white;
+        }
+        
+        .ticklebox-scratch-card-icon {
+            font-size: 3rem;
+            margin-bottom: var(--ticklebox-space);
+        }
+        
+        .ticklebox-scratch-card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: var(--ticklebox-space-xs);
+        }
+        
+        .ticklebox-scratch-card-desc {
+            font-size: 0.875rem;
+            color: var(--ticklebox-text-secondary);
+        }
+        
+        .ticklebox-scratch-game {
+            background: var(--ticklebox-bg-card);
+            border-radius: var(--ticklebox-radius-lg);
+            padding: var(--ticklebox-space-xl);
+            margin: var(--ticklebox-space-lg) 0;
+            box-shadow: var(--ticklebox-shadow);
+            display: none;
+        }
+        
+        .ticklebox-scratch-canvas-container {
+            position: relative;
+            margin: 0 auto;
+            max-width: 500px;
+        }
+        
+        .ticklebox-scratch-canvas {
+            width: 100%;
+            height: 300px;
+            border-radius: var(--ticklebox-radius);
+            box-shadow: var(--ticklebox-shadow-lg);
+            cursor: crosshair;
+            touch-action: none;
+        }
+        
+        .ticklebox-scratch-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, #666666, #888888);
+            border-radius: var(--ticklebox-radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            font-weight: 600;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .ticklebox-scratch-stats {
+            display: flex;
+            justify-content: space-between;
+            margin: var(--ticklebox-space) 0;
+            padding: var(--ticklebox-space);
+            background: var(--ticklebox-bg-secondary);
+            border-radius: var(--ticklebox-radius);
+        }
+        
+        .ticklebox-scratch-stat {
+            text-align: center;
+        }
+        
+        .ticklebox-scratch-stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--ticklebox-primary);
+        }
+        
+        .ticklebox-scratch-stat-label {
+            font-size: 0.875rem;
+            color: var(--ticklebox-text-secondary);
+        }
+        
+        .ticklebox-scratch-revealed {
+            background: linear-gradient(135deg, var(--ticklebox-primary-light), var(--ticklebox-secondary-light));
+            border-radius: var(--ticklebox-radius-lg);
+            padding: var(--ticklebox-space-xl);
+            margin: var(--ticklebox-space-lg) 0;
+            color: white;
+            text-align: center;
+            display: none;
+            animation: ticklebox-scale-in var(--ticklebox-transition);
+        }
+        
+        .ticklebox-scratch-revealed-icon {
+            font-size: 4rem;
+            margin-bottom: var(--ticklebox-space);
+        }
+        
+        .ticklebox-scratch-revealed-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: var(--ticklebox-space);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .ticklebox-scratch-revealed-message {
+            font-size: 1.2rem;
+            margin-bottom: var(--ticklebox-space-lg);
+            line-height: 1.6;
+        }
+        
+        .ticklebox-scratch-actions {
+            display: flex;
+            gap: var(--ticklebox-space);
+            justify-content: center;
+            margin-top: var(--ticklebox-space);
+        }
+        
+        .ticklebox-scratch-btn {
+            padding: var(--ticklebox-space-sm) var(--ticklebox-space-lg);
+            border: none;
+            border-radius: var(--ticklebox-radius);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--ticklebox-transition-fast);
+        }
+        
+        .ticklebox-scratch-btn-primary {
+            background: white;
+            color: var(--ticklebox-primary);
+        }
+        
+        .ticklebox-scratch-btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--ticklebox-shadow-lg);
+        }
+        
+        .ticklebox-scratch-btn-secondary {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid white;
+        }
+        
+        .ticklebox-scratch-btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .ticklebox-scratch-custom {
+            margin-top: var(--ticklebox-space-lg);
+            padding-top: var(--ticklebox-space);
+            border-top: 1px solid var(--ticklebox-border);
+        }
+        
+        .ticklebox-scratch-textarea {
+            width: 100%;
+            padding: var(--ticklebox-space);
+            border: 2px solid var(--ticklebox-border);
+            border-radius: var(--ticklebox-radius);
+            background: var(--ticklebox-bg-secondary);
+            color: var(--ticklebox-text-primary);
+            font-size: 1rem;
+            resize: vertical;
+            min-height: 100px;
+            margin-bottom: var(--ticklebox-space);
+        }
+        
+        .ticklebox-scratch-textarea:focus {
+            outline: none;
+            border-color: var(--ticklebox-primary);
+        }
+        
+        .ticklebox-scratch-progress {
+            height: 8px;
+            background: var(--ticklebox-bg-tertiary);
+            border-radius: 4px;
+            margin: var(--ticklebox-space) 0;
+            overflow: hidden;
+        }
+        
+        .ticklebox-scratch-progress-fill {
+            height: 100%;
+            background: var(--ticklebox-primary);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+        
+        .ticklebox-scratch-instructions {
+            background: var(--ticklebox-bg-secondary);
+            border-radius: var(--ticklebox-radius);
+            padding: var(--ticklebox-space);
+            margin: var(--ticklebox-space) 0;
+            font-size: 0.875rem;
+            color: var(--ticklebox-text-secondary);
+        }
+    </style>
+</head>
+<body>
+   <!-- components/navbar.html - FIXED VERSION -->
+
+
+    <div id="tickleboxNavbarContainer"></div>
+
+    <main class="ticklebox-container">
+        <div class="ticklebox-game-header">
+            <div class="ticklebox-game-header-icon">🎴</div>
+            <div class="ticklebox-game-header-info">
+                <h1 class="ticklebox-game-title">Scratch-Off Reveal Cards</h1>
+                <p class="ticklebox-game-subtitle">Scratch to reveal hidden messages or surprise images</p>
+                <div class="ticklebox-game-meta">
+                    <span class="ticklebox-game-rating">⭐ 4.6 (800K+ plays)</span>
+                    <span class="ticklebox-game-category">🎲 Fun</span>
+                    <span class="ticklebox-game-time">⏱️ 1-2 min</span>
+                </div>
+            </div>
+            <button class="ticklebox-game-share" id="tickleboxScratchShare">
+                <svg viewBox="0 0 24 24" width="20" height="20">
+                    <path fill="currentColor" d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/>
+                </svg>
+                Share
+            </button>
+        </div>
+
+        <div class="ticklebox-game-content">
+            <div class="ticklebox-scratch-container">
+                <div class="ticklebox-scratch-selection">
+                    <h2 class="ticklebox-section-title">Choose Your Scratch Card</h2>
+                    <p class="ticklebox-section-subtitle">Select a card type or create your own custom message</p>
+                    
+                    <div class="ticklebox-scratch-cards" id="tickleboxScratchCards">
+                        <!-- Cards will be loaded by JavaScript -->
+                    </div>
+                    
+                    <div class="ticklebox-scratch-custom">
+                        <h3>Create Custom Card</h3>
+                        <textarea class="ticklebox-scratch-textarea" 
+                                  id="tickleboxCustomMessage" 
+                                  placeholder="Write your own hidden message here..."></textarea>
+                        <button class="ticklebox-btn-primary" id="tickleboxCreateCustom">
+                            Create Custom Card
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="ticklebox-scratch-game" id="tickleboxScratchGame">
+                    <h2 class="ticklebox-section-title" id="tickleboxGameTitle">Scratch to Reveal!</h2>
+                    <div class="ticklebox-scratch-instructions">
+                        💡 Drag your mouse or finger over the gray area to scratch and reveal what's underneath
+                    </div>
+                    
+                    <div class="ticklebox-scratch-stats">
+                        <div class="ticklebox-scratch-stat">
+                            <div class="ticklebox-scratch-stat-value" id="tickleboxScratchedPercent">0%</div>
+                            <div class="ticklebox-scratch-stat-label">Scratched</div>
+                        </div>
+                        <div class="ticklebox-scratch-stat">
+                            <div class="ticklebox-scratch-stat-value" id="tickleboxScratchTime">0s</div>
+                            <div class="ticklebox-scratch-stat-label">Time</div>
+                        </div>
+                        <div class="ticklebox-scratch-stat">
+                            <div class="ticklebox-scratch-stat-value" id="tickleboxScratchArea">0px²</div>
+                            <div class="ticklebox-scratch-stat-label">Area</div>
+                        </div>
+                    </div>
+                    
+                    <div class="ticklebox-scratch-progress">
+                        <div class="ticklebox-scratch-progress-fill" id="tickleboxScratchProgress" style="width: 0%"></div>
+                    </div>
+                    
+                    <div class="ticklebox-scratch-canvas-container">
+                        <canvas id="tickleboxScratchCanvas" class="ticklebox-scratch-canvas"></canvas>
+                        <div class="ticklebox-scratch-overlay" id="tickleboxScratchOverlay">
+                            🎴 Scratch Here!
+                        </div>
+                    </div>
+                    
+                    <div class="ticklebox-scratch-actions">
+                        <button class="ticklebox-scratch-btn ticklebox-scratch-btn-secondary" id="tickleboxResetScratch">
+                            🔄 Reset
+                        </button>
+                        <button class="ticklebox-scratch-btn ticklebox-scratch-btn-primary" id="tickleboxRevealAll">
+                            👁️ Reveal All
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="ticklebox-scratch-revealed" id="tickleboxScratchRevealed">
+                    <!-- Revealed content will be shown here -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+   <!-- components/footer.html - FIXED VERSION -->
+
+    <div id="tickleboxFooterContainer"></div>
+
+    <script src="../js/ticklebox-main.js"></script>
+    <script>
+        // Scratch card types
+        const TICKLEBOX_SCRATCH_CARDS = [
+            {
+                id: 'fortune',
+                icon: '🔮',
+                title: 'Daily Fortune',
+                description: 'Get your daily fortune prediction',
+                color: '#8b5cf6',
+                messages: [
+                    "Today is your lucky day! 🌟",
+                    "Good fortune is coming your way! 🍀",
+                    "Amazing opportunities await! 🚀",
+                    "Success is just around the corner! 🏆",
+                    "Your hard work will pay off soon! 💪"
+                ]
+            },
+            {
+                id: 'love',
+                icon: '💖',
+                title: 'Love Message',
+                description: 'Sweet romantic messages',
+                color: '#ef4444',
+                messages: [
+                    "You are loved more than you know! 💕",
+                    "Someone is thinking of you right now! 😊",
+                    "Your smile brightens someone's day! ☀️",
+                    "True love is coming your way! 💑",
+                    "You deserve all the happiness in the world! 🌎"
+                ]
+            },
+            {
+                id: 'joke',
+                icon: '😂',
+                title: 'Funny Joke',
+                description: 'Laugh with hilarious jokes',
+                color: '#f59e0b',
+                messages: [
+                    "Why don't scientists trust atoms? Because they make up everything!",
+                    "I told my wife she was drawing her eyebrows too high. She looked surprised!",
+                    "Why don't eggs tell jokes? They'd crack each other up!",
+                    "I'm reading a book on anti-gravity. It's impossible to put down!",
+                    "What do you call a fake noodle? An impasta! 🍝"
+                ]
+            },
+            {
+                id: 'quote',
+                icon: '💭',
+                title: 'Inspirational Quote',
+                description: 'Motivational quotes to inspire',
+                color: '#10b981',
+                messages: [
+                    "The only way to do great work is to love what you do. – Steve Jobs",
+                    "Believe you can and you're halfway there. – Theodore Roosevelt",
+                    "It does not matter how slowly you go as long as you do not stop. – Confucius",
+                    "The future belongs to those who believe in the beauty of their dreams. – Eleanor Roosevelt",
+                    "Don't watch the clock; do what it does. Keep going. – Sam Levenson"
+                ]
+            },
+            {
+                id: 'compliment',
+                icon: '🌟',
+                title: 'Nice Compliment',
+                description: 'Feel-good compliments',
+                color: '#ec4899',
+                messages: [
+                    "You're doing amazing! Keep it up!",
+                    "Your positivity is infectious!",
+                    "You have the best ideas!",
+                    "People feel happy around you!",
+                    "You're stronger than you think!"
+                ]
+            },
+            {
+                id: 'surprise',
+                icon: '🎁',
+                title: 'Random Surprise',
+                description: 'Mystery surprise message',
+                color: '#3b82f6',
+                messages: [
+                    "🎉 You found a virtual confetti party!",
+                    "🦄 A magical unicorn just visited you!",
+                    "🌈 You discovered a hidden rainbow!",
+                    "🎶 Music is the answer to everything!",
+                    "✨ You have unlocked bonus positivity!"
+                ]
+            }
+        ];
+        
+        class TickleboxScratchGame {
+            constructor() {
+                this.canvas = document.getElementById('tickleboxScratchCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.isScratching = false;
+                this.scratchedArea = 0;
+                this.totalArea = 0;
+                this.scratchedPercent = 0;
+                this.startTime = null;
+                this.currentCard = null;
+                this.revealedImage = null;
+                this.init();
+            }
+            
+            init() {
+                this.setupCanvas();
+                this.loadCardSelection();
+                this.setupEventListeners();
+            }
+            
+            setupCanvas() {
+                // Set canvas size
+                this.canvas.width = 500;
+                this.canvas.height = 300;
+                this.totalArea = this.canvas.width * this.canvas.height;
+                
+                // Draw initial overlay
+                this.drawOverlay();
+            }
+            
+            loadCardSelection() {
+                const cardsDiv = document.getElementById('tickleboxScratchCards');
+                TICKLEBOX_SCRATCH_CARDS.forEach(card => {
+                    const cardDiv = document.createElement('div');
+                    cardDiv.className = 'ticklebox-scratch-card';
+                    cardDiv.dataset.card = card.id;
+                    cardDiv.innerHTML = `
+                        <div class="ticklebox-scratch-card-icon">${card.icon}</div>
+                        <div class="ticklebox-scratch-card-title">${card.title}</div>
+                        <div class="ticklebox-scratch-card-desc">${card.description}</div>
+                    `;
+                    
+                    cardDiv.addEventListener('click', () => {
+                        this.selectCard(card);
+                    });
+                    
+                    cardsDiv.appendChild(cardDiv);
+                });
+                
+                // Custom card creation
+                document.getElementById('tickleboxCreateCustom').addEventListener('click', () => {
+                    this.createCustomCard();
+                });
+            }
+            
+            setupEventListeners() {
+                // Canvas events
+                this.canvas.addEventListener('mousedown', (e) => this.startScratching(e));
+                this.canvas.addEventListener('mousemove', (e) => this.scratch(e));
+                this.canvas.addEventListener('mouseup', () => this.stopScratching());
+                this.canvas.addEventListener('mouseleave', () => this.stopScratching());
+                
+                // Touch events for mobile
+                this.canvas.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    this.startScratching(e.touches[0]);
+                });
+                this.canvas.addEventListener('touchmove', (e) => {
+                    e.preventDefault();
+                    this.scratch(e.touches[0]);
+                });
+                this.canvas.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    this.stopScratching();
+                });
+                
+                // Game actions
+                document.getElementById('tickleboxResetScratch').addEventListener('click', () => {
+                    this.resetScratch();
+                });
+                
+                document.getElementById('tickleboxRevealAll').addEventListener('click', () => {
+                    this.revealAll();
+                });
+                
+                // Share button
+                document.getElementById('tickleboxScratchShare').addEventListener('click', () => {
+                    this.shareResult();
+                });
+            }
+            
+            selectCard(card) {
+                this.currentCard = card;
+                
+                // Update UI
+                document.querySelectorAll('.ticklebox-scratch-card').forEach(c => {
+                    c.classList.remove('active');
+                });
+                document.querySelector(`.ticklebox-scratch-card[data-card="${card.id}"]`).classList.add('active');
+                
+                // Show game area
+                document.getElementById('tickleboxScratchGame').style.display = 'block';
+                document.getElementById('tickleboxScratchRevealed').style.display = 'none';
+                document.getElementById('tickleboxGameTitle').textContent = `Scratch to Reveal: ${card.title}`;
+                
+                // Reset game
+                this.resetScratch();
+                
+                // Draw card background
+                this.drawCardBackground(card);
+                
+                // Scroll to game
+                document.getElementById('tickleboxScratchGame').scrollIntoView({ 
+                    behavior: 'smooth' 
+                });
+            }
+            
+            createCustomCard() {
+                const message = document.getElementById('tickleboxCustomMessage').value.trim();
+                if (!message) {
+                    alert('Please enter a message');
+                    return;
+                }
+                
+                const customCard = {
+                    id: 'custom',
+                    icon: '✍️',
+                    title: 'Your Message',
+                    description: 'Custom scratch card',
+                    color: '#7c3aed',
+                    messages: [message]
+                };
+                
+                this.selectCard(customCard);
+            }
+            
+            drawCardBackground(card) {
+                // Clear canvas
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                // Draw background
+                this.ctx.fillStyle = card.color + '20'; // Add transparency
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                // Draw pattern
+                this.ctx.fillStyle = card.color + '40';
+                for (let i = 0; i < 50; i++) {
+                    const x = Math.random() * this.canvas.width;
+                    const y = Math.random() * this.canvas.height;
+                    const size = Math.random() * 20 + 10;
+                    this.ctx.beginPath();
+                    this.ctx.arc(x, y, size, 0, Math.PI * 2);
+                    this.ctx.fill();
+                }
+                
+                // Draw card icon
+                this.ctx.font = 'bold 60px Arial';
+                this.ctx.fillStyle = card.color;
+                this.ctx.textAlign = 'center';
+                this.ctx.textBaseline = 'middle';
+                this.ctx.fillText(card.icon, this.canvas.width / 2, this.canvas.height / 2 - 30);
+                
+                // Draw card title
+                this.ctx.font = 'bold 24px Arial';
+                this.ctx.fillText(card.title, this.canvas.width / 2, this.canvas.height / 2 + 40);
+                
+                // Save as revealed image
+                this.revealedImage = new Image();
+                this.revealedImage.src = this.canvas.toDataURL();
+                
+                // Draw overlay
+                this.drawOverlay();
+            }
+            
+            drawOverlay() {
+                // Create scratch overlay pattern
+                const overlayPattern = this.createScratchPattern();
+                this.ctx.fillStyle = overlayPattern;
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                // Draw scratch text
+                this.ctx.font = 'bold 28px Arial';
+                this.ctx.fillStyle = '#ffffff';
+                this.ctx.textAlign = 'center';
+                this.ctx.textBaseline = 'middle';
+                this.ctx.fillText('🎴 Scratch Here!', this.canvas.width / 2, this.canvas.height / 2);
+            }
+            
+            createScratchPattern() {
+                // Create a scratch-like pattern
+                const patternCanvas = document.createElement('canvas');
+                patternCanvas.width = 20;
+                patternCanvas.height = 20;
+                const patternCtx = patternCanvas.getContext('2d');
+                
+                // Draw metal-like pattern
+                patternCtx.fillStyle = '#666666';
+                patternCtx.fillRect(0, 0, 20, 20);
+                
+                patternCtx.fillStyle = '#888888';
+                for (let i = 0; i < 10; i++) {
+                    const x = Math.random() * 20;
+                    const y = Math.random() * 20;
+                    const size = Math.random() * 3 + 1;
+                    patternCtx.beginPath();
+                    patternCtx.arc(x, y, size, 0, Math.PI * 2);
+                    patternCtx.fill();
+                }
+                
+                patternCtx.fillStyle = '#444444';
+                for (let i = 0; i < 5; i++) {
+                    const x = Math.random() * 20;
+                    const y = Math.random() * 20;
+                    patternCtx.fillRect(x, y, 2, 2);
+                }
+                
+                return this.ctx.createPattern(patternCanvas, 'repeat');
+            }
+            
+            startScratching(e) {
+                if (!this.currentCard) return;
+                
+                this.isScratching = true;
+                if (!this.startTime) {
+                    this.startTime = Date.now();
+                    this.startTimer();
+                }
+                
+                const rect = this.canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                this.scratchAt(x, y);
+            }
+            
+            scratch(e) {
+                if (!this.isScratching) return;
+                
+                const rect = this.canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                this.scratchAt(x, y);
+            }
+            
+            scratchAt(x, y) {
+                // Use destination-out compositing to "scratch off" the overlay
+                this.ctx.globalCompositeOperation = 'destination-out';
+                this.ctx.beginPath();
+                this.ctx.arc(x, y, 20, 0, Math.PI * 2);
+                this.ctx.fill();
+                this.ctx.globalCompositeOperation = 'source-over';
+                
+                // Update scratched area
+                this.updateScratchedArea();
+            }
+            
+            updateScratchedArea() {
+                // Get image data to calculate scratched area
+                const imageData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
+                const data = imageData.data;
+                
+                let transparentPixels = 0;
+                for (let i = 3; i < data.length; i += 4) {
+                    if (data[i] < 128) { // Semi-transparent or transparent
+                        transparentPixels++;
+                    }
+                }
+                
+                this.scratchedArea = transparentPixels;
+                this.scratchedPercent = Math.round((this.scratchedArea / this.totalArea) * 100);
+                
+                // Update UI
+                document.getElementById('tickleboxScratchedPercent').textContent = `${this.scratchedPercent}%`;
+                document.getElementById('tickleboxScratchProgress').style.width = `${this.scratchedPercent}%`;
+                document.getElementById('tickleboxScratchArea').textContent = `${this.scratchedArea.toLocaleString()}px²`;
+                
+                // Check if revealed enough
+                if (this.scratchedPercent >= 70) {
+                    this.revealCard();
+                }
+            }
+            
+            startTimer() {
+                const updateTimer = () => {
+                    if (this.startTime) {
+                        const elapsed = Math.floor((Date.now() - this.startTime) / 1000);
+                        document.getElementById('tickleboxScratchTime').textContent = `${elapsed}s`;
+                        
+                        if (this.scratchedPercent < 100) {
+                            requestAnimationFrame(updateTimer);
+                        }
+                    }
+                };
+                updateTimer();
+            }
+            
+            stopScratching() {
+                this.isScratching = false;
+            }
+            
+            resetScratch() {
+                this.scratchedArea = 0;
+                this.scratchedPercent = 0;
+                this.startTime = null;
+                
+                // Update UI
+                document.getElementById('tickleboxScratchedPercent').textContent = '0%';
+                document.getElementById('tickleboxScratchProgress').style.width = '0%';
+                document.getElementById('tickleboxScratchArea').textContent = '0px²';
+                document.getElementById('tickleboxScratchTime').textContent = '0s';
+                
+                // Redraw
+                if (this.currentCard) {
+                    this.drawCardBackground(this.currentCard);
+                }
+                
+                // Hide revealed section
+                document.getElementById('tickleboxScratchRevealed').style.display = 'none';
+            }
+            
+            revealAll() {
+                // Clear entire overlay
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                this.ctx.drawImage(this.revealedImage, 0, 0);
+                this.scratchedArea = this.totalArea;
+                this.scratchedPercent = 100;
+                this.updateScratchedArea();
+                this.revealCard();
+            }
+            
+            revealCard() {
+                if (!this.currentCard) return;
+                
+                // Get random message from card
+                const messages = this.currentCard.messages;
+                const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+                
+                // Update revealed section
+                const revealedDiv = document.getElementById('tickleboxScratchRevealed');
+                revealedDiv.style.display = 'block';
+                revealedDiv.style.background = `linear-gradient(135deg, ${this.currentCard.color}40, ${this.currentCard.color}80)`;
+                
+                revealedDiv.innerHTML = `
+                    <div class="ticklebox-scratch-revealed-icon">${this.currentCard.icon}</div>
+                    <div class="ticklebox-scratch-revealed-title">${this.currentCard.title}</div>
+                    <div class="ticklebox-scratch-revealed-message">${randomMessage}</div>
+                    <div class="ticklebox-scratch-actions">
+                        <button class="ticklebox-scratch-btn ticklebox-scratch-btn-primary" id="tickleboxPlayAgain">
+                            🎴 Play Again
+                        </button>
+                        <button class="ticklebox-scratch-btn ticklebox-scratch-btn-secondary" id="tickleboxShareReveal">
+                            📤 Share
+                        </button>
+                    </div>
+                `;
+                
+                // Add event listeners to new buttons
+                document.getElementById('tickleboxPlayAgain').addEventListener('click', () => {
+                    this.resetScratch();
+                });
+                
+                document.getElementById('tickleboxShareReveal').addEventListener('click', () => {
+                    this.shareResult();
+                });
+                
+                // Scroll to revealed section
+                revealedDiv.scrollIntoView({ behavior: 'smooth' });
+            }
+            
+            shareResult() {
+                if (!this.currentCard) {
+                    alert('Please select a card first');
+                    return;
+                }
+                
+                const share = new TickleboxShare({
+                    title: 'Scratch-Off Card - TickleBox',
+                    text: `I scratched a ${this.currentCard.title} card on TickleBox! 🎴`,
+                    url: window.location.href
+                });
+                share.openModal();
+            }
+        }
+        
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            // Load navbar and footer
+            fetch('../components/navbar.html')
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById('tickleboxNavbarContainer').innerHTML = html;
+                    initTheme();
+                    initSearch();
+                    initDropdowns();
+                    initMobileMenu();
+                });
+            
+            fetch('../components/footer.html')
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById('tickleboxFooterContainer').innerHTML = html;
+                    initFooter();
+                });
+            
+            // Initialize scratch game
+            window.tickleboxScratchGame = new TickleboxScratchGame();
+        });
+    </script>
+</body>
+</html>
