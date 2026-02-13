@@ -406,7 +406,7 @@ class TickleboxQuiz {
                 console.log('Download screenshot');
             });
         }
-        
+         
         // Screenshot share
         const screenshotShareBtn = document.getElementById('tickleboxScreenshotShare');
         if (screenshotShareBtn) {
