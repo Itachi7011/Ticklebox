@@ -1,9 +1,9 @@
 // js/ticklebox-main.js - FIXED VERSION
 
 // Game Data - UPDATED WITH CORRECT PATHS
-const TICKLEBOX_GAMES = [
+const TICKLEBOX_GAMES = [ 
   {
-    id: "interactive-quiz",
+    id: "interactive-quiz", 
     title: "Interactive Quiz",
     icon: "❓",
     category: "Quiz",

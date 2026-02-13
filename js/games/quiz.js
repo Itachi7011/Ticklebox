@@ -368,8 +368,8 @@ class TickleboxQuiz {
         if (modal) {
             modal.classList.add('show');
         }
-    }
-    
+    } 
+     
     setupEventListeners() {
         // Category selection
         document.querySelectorAll('.ticklebox-quiz-category').forEach(btn => {
