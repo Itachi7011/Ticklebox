@@ -438,7 +438,7 @@ missingGames.forEach((game) => {
             </div>
         </div>
     </div>
-
+  
     <!-- Back to Top Button -->
     <button class="ticklebox-back-to-top" id="tickleboxBackToTop" aria-label="Back to top">
         <svg viewBox="0 0 24 24" width="20" height="20">

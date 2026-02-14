@@ -2,9 +2,9 @@
 
 // Game Data - UPDATED WITH CORRECT PATHS
 const TICKLEBOX_GAMES = [ 
-  {
-    id: "interactive-quiz", 
-    title: "Interactive Quiz",
+  { 
+    id: "interactive-quiz",  
+    title: "Interactive Quiz", 
     icon: "❓",
     category: "Quiz",
     description: "Test your knowledge with fun quizzes and animated feedback",
